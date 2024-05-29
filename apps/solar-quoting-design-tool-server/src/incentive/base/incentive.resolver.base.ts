@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Incentive } from "./Incentive";
 import { IncentiveCountArgs } from "./IncentiveCountArgs";
 import { IncentiveFindManyArgs } from "./IncentiveFindManyArgs";
 import { IncentiveFindUniqueArgs } from "./IncentiveFindUniqueArgs";
 import { DeleteIncentiveArgs } from "./DeleteIncentiveArgs";
 import { IncentiveService } from "../incentive.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Incentive)
 export class IncentiveResolverBase {
-  constructor(protected readonly service: IncentiveService) {}
+  constructor(
+    protected readonly service: IncentiveService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "read",
+    possession: "any",
+  })
   async _incentivesMeta(
     @graphql.Args() args: IncentiveCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class IncentiveResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Incentive])
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "read",
+    possession: "any",
+  })
   async incentives(
     @graphql.Args() args: IncentiveFindManyArgs
   ): Promise<Incentive[]> {
     return this.service.incentives(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Incentive, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "read",
+    possession: "own",
+  })
   async incentive(
     @graphql.Args() args: IncentiveFindUniqueArgs
   ): Promise<Incentive | null> {
@@ -51,6 +78,11 @@ export class IncentiveResolverBase {
   }
 
   @graphql.Mutation(() => Incentive)
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "delete",
+    possession: "any",
+  })
   async deleteIncentive(
     @graphql.Args() args: DeleteIncentiveArgs
   ): Promise<Incentive | null> {

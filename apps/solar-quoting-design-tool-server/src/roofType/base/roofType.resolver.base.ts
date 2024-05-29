@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { RoofType } from "./RoofType";
 import { RoofTypeCountArgs } from "./RoofTypeCountArgs";
 import { RoofTypeFindManyArgs } from "./RoofTypeFindManyArgs";
 import { RoofTypeFindUniqueArgs } from "./RoofTypeFindUniqueArgs";
 import { DeleteRoofTypeArgs } from "./DeleteRoofTypeArgs";
 import { RoofTypeService } from "../roofType.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => RoofType)
 export class RoofTypeResolverBase {
-  constructor(protected readonly service: RoofTypeService) {}
+  constructor(
+    protected readonly service: RoofTypeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "read",
+    possession: "any",
+  })
   async _roofTypesMeta(
     @graphql.Args() args: RoofTypeCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class RoofTypeResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [RoofType])
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "read",
+    possession: "any",
+  })
   async roofTypes(
     @graphql.Args() args: RoofTypeFindManyArgs
   ): Promise<RoofType[]> {
     return this.service.roofTypes(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => RoofType, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "read",
+    possession: "own",
+  })
   async roofType(
     @graphql.Args() args: RoofTypeFindUniqueArgs
   ): Promise<RoofType | null> {
@@ -51,6 +78,11 @@ export class RoofTypeResolverBase {
   }
 
   @graphql.Mutation(() => RoofType)
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "delete",
+    possession: "any",
+  })
   async deleteRoofType(
     @graphql.Args() args: DeleteRoofTypeArgs
   ): Promise<RoofType | null> {

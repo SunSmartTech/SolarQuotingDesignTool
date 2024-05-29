@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { System } from "./System";
 import { SystemCountArgs } from "./SystemCountArgs";
 import { SystemFindManyArgs } from "./SystemFindManyArgs";
@@ -21,10 +27,20 @@ import { CreateSystemArgs } from "./CreateSystemArgs";
 import { UpdateSystemArgs } from "./UpdateSystemArgs";
 import { DeleteSystemArgs } from "./DeleteSystemArgs";
 import { SystemService } from "../system.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => System)
 export class SystemResolverBase {
-  constructor(protected readonly service: SystemService) {}
+  constructor(
+    protected readonly service: SystemService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "read",
+    possession: "any",
+  })
   async _systemsMeta(
     @graphql.Args() args: SystemCountArgs
   ): Promise<MetaQueryPayload> {
@@ -34,12 +50,24 @@ export class SystemResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [System])
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "read",
+    possession: "any",
+  })
   async systems(@graphql.Args() args: SystemFindManyArgs): Promise<System[]> {
     return this.service.systems(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => System, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "read",
+    possession: "own",
+  })
   async system(
     @graphql.Args() args: SystemFindUniqueArgs
   ): Promise<System | null> {
@@ -50,7 +78,13 @@ export class SystemResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => System)
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "create",
+    possession: "any",
+  })
   async createSystem(@graphql.Args() args: CreateSystemArgs): Promise<System> {
     return await this.service.createSystem({
       ...args,
@@ -58,7 +92,13 @@ export class SystemResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => System)
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "update",
+    possession: "any",
+  })
   async updateSystem(
     @graphql.Args() args: UpdateSystemArgs
   ): Promise<System | null> {
@@ -78,6 +118,11 @@ export class SystemResolverBase {
   }
 
   @graphql.Mutation(() => System)
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "delete",
+    possession: "any",
+  })
   async deleteSystem(
     @graphql.Args() args: DeleteSystemArgs
   ): Promise<System | null> {

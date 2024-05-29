@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { PublicFileService } from "../publicFile.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PublicFileCreateInput } from "./PublicFileCreateInput";
 import { PublicFile } from "./PublicFile";
 import { PublicFileFindManyArgs } from "./PublicFileFindManyArgs";
 import { PublicFileWhereUniqueInput } from "./PublicFileWhereUniqueInput";
 import { PublicFileUpdateInput } from "./PublicFileUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class PublicFileControllerBase {
-  constructor(protected readonly service: PublicFileService) {}
+  constructor(
+    protected readonly service: PublicFileService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: PublicFile })
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createPublicFile(
     @common.Body() data: PublicFileCreateInput
   ): Promise<PublicFile> {
@@ -40,9 +58,18 @@ export class PublicFileControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [PublicFile] })
   @ApiNestedQuery(PublicFileFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async publicFiles(@common.Req() request: Request): Promise<PublicFile[]> {
     const args = plainToClass(PublicFileFindManyArgs, request.query);
     return this.service.publicFiles({
@@ -55,9 +82,18 @@ export class PublicFileControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: PublicFile })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async publicFile(
     @common.Param() params: PublicFileWhereUniqueInput
   ): Promise<PublicFile | null> {
@@ -77,9 +113,18 @@ export class PublicFileControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: PublicFile })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updatePublicFile(
     @common.Param() params: PublicFileWhereUniqueInput,
     @common.Body() data: PublicFileUpdateInput
@@ -107,6 +152,14 @@ export class PublicFileControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: PublicFile })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deletePublicFile(
     @common.Param() params: PublicFileWhereUniqueInput
   ): Promise<PublicFile | null> {

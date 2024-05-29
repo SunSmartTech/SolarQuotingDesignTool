@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { BatteryService } from "../battery.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { BatteryCreateInput } from "./BatteryCreateInput";
 import { Battery } from "./Battery";
 import { BatteryFindManyArgs } from "./BatteryFindManyArgs";
 import { BatteryWhereUniqueInput } from "./BatteryWhereUniqueInput";
 import { BatteryUpdateInput } from "./BatteryUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class BatteryControllerBase {
-  constructor(protected readonly service: BatteryService) {}
+  constructor(
+    protected readonly service: BatteryService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Battery })
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createBattery(
     @common.Body() data: BatteryCreateInput
   ): Promise<Battery> {
@@ -40,9 +58,18 @@ export class BatteryControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Battery] })
   @ApiNestedQuery(BatteryFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async batteries(@common.Req() request: Request): Promise<Battery[]> {
     const args = plainToClass(BatteryFindManyArgs, request.query);
     return this.service.batteries({
@@ -55,9 +82,18 @@ export class BatteryControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Battery })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async battery(
     @common.Param() params: BatteryWhereUniqueInput
   ): Promise<Battery | null> {
@@ -77,9 +113,18 @@ export class BatteryControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Battery })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateBattery(
     @common.Param() params: BatteryWhereUniqueInput,
     @common.Body() data: BatteryUpdateInput
@@ -107,6 +152,14 @@ export class BatteryControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Battery })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteBattery(
     @common.Param() params: BatteryWhereUniqueInput
   ): Promise<Battery | null> {

@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ModuleModelService } from "../moduleModel.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ModuleModelCreateInput } from "./ModuleModelCreateInput";
 import { ModuleModel } from "./ModuleModel";
 import { ModuleModelFindManyArgs } from "./ModuleModelFindManyArgs";
 import { ModuleModelWhereUniqueInput } from "./ModuleModelWhereUniqueInput";
 import { ModuleModelUpdateInput } from "./ModuleModelUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ModuleModelControllerBase {
-  constructor(protected readonly service: ModuleModelService) {}
+  constructor(
+    protected readonly service: ModuleModelService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: ModuleModel })
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createModuleModel(
     @common.Body() data: ModuleModelCreateInput
   ): Promise<ModuleModel> {
@@ -40,9 +58,18 @@ export class ModuleModelControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [ModuleModel] })
   @ApiNestedQuery(ModuleModelFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async moduleModels(@common.Req() request: Request): Promise<ModuleModel[]> {
     const args = plainToClass(ModuleModelFindManyArgs, request.query);
     return this.service.moduleModels({
@@ -55,9 +82,18 @@ export class ModuleModelControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: ModuleModel })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async moduleModel(
     @common.Param() params: ModuleModelWhereUniqueInput
   ): Promise<ModuleModel | null> {
@@ -77,9 +113,18 @@ export class ModuleModelControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: ModuleModel })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateModuleModel(
     @common.Param() params: ModuleModelWhereUniqueInput,
     @common.Body() data: ModuleModelUpdateInput
@@ -107,6 +152,14 @@ export class ModuleModelControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: ModuleModel })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteModuleModel(
     @common.Param() params: ModuleModelWhereUniqueInput
   ): Promise<ModuleModel | null> {

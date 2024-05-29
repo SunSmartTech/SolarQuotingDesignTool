@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { OtherComponentService } from "../otherComponent.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OtherComponentCreateInput } from "./OtherComponentCreateInput";
 import { OtherComponent } from "./OtherComponent";
 import { OtherComponentFindManyArgs } from "./OtherComponentFindManyArgs";
 import { OtherComponentWhereUniqueInput } from "./OtherComponentWhereUniqueInput";
 import { OtherComponentUpdateInput } from "./OtherComponentUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class OtherComponentControllerBase {
-  constructor(protected readonly service: OtherComponentService) {}
+  constructor(
+    protected readonly service: OtherComponentService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: OtherComponent })
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createOtherComponent(
     @common.Body() data: OtherComponentCreateInput
   ): Promise<OtherComponent> {
@@ -40,9 +58,18 @@ export class OtherComponentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [OtherComponent] })
   @ApiNestedQuery(OtherComponentFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async otherComponents(
     @common.Req() request: Request
   ): Promise<OtherComponent[]> {
@@ -57,9 +84,18 @@ export class OtherComponentControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: OtherComponent })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async otherComponent(
     @common.Param() params: OtherComponentWhereUniqueInput
   ): Promise<OtherComponent | null> {
@@ -79,9 +115,18 @@ export class OtherComponentControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: OtherComponent })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateOtherComponent(
     @common.Param() params: OtherComponentWhereUniqueInput,
     @common.Body() data: OtherComponentUpdateInput
@@ -109,6 +154,14 @@ export class OtherComponentControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: OtherComponent })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteOtherComponent(
     @common.Param() params: OtherComponentWhereUniqueInput
   ): Promise<OtherComponent | null> {

@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AssignedContact } from "./AssignedContact";
 import { AssignedContactCountArgs } from "./AssignedContactCountArgs";
 import { AssignedContactFindManyArgs } from "./AssignedContactFindManyArgs";
@@ -22,10 +28,20 @@ import { UpdateAssignedContactArgs } from "./UpdateAssignedContactArgs";
 import { DeleteAssignedContactArgs } from "./DeleteAssignedContactArgs";
 import { Contact } from "../../contact/base/Contact";
 import { AssignedContactService } from "../assignedContact.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => AssignedContact)
 export class AssignedContactResolverBase {
-  constructor(protected readonly service: AssignedContactService) {}
+  constructor(
+    protected readonly service: AssignedContactService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "read",
+    possession: "any",
+  })
   async _assignedContactsMeta(
     @graphql.Args() args: AssignedContactCountArgs
   ): Promise<MetaQueryPayload> {
@@ -35,14 +51,26 @@ export class AssignedContactResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [AssignedContact])
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "read",
+    possession: "any",
+  })
   async assignedContacts(
     @graphql.Args() args: AssignedContactFindManyArgs
   ): Promise<AssignedContact[]> {
     return this.service.assignedContacts(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => AssignedContact, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "read",
+    possession: "own",
+  })
   async assignedContact(
     @graphql.Args() args: AssignedContactFindUniqueArgs
   ): Promise<AssignedContact | null> {
@@ -53,7 +81,13 @@ export class AssignedContactResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedContact)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "create",
+    possession: "any",
+  })
   async createAssignedContact(
     @graphql.Args() args: CreateAssignedContactArgs
   ): Promise<AssignedContact> {
@@ -71,7 +105,13 @@ export class AssignedContactResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedContact)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "update",
+    possession: "any",
+  })
   async updateAssignedContact(
     @graphql.Args() args: UpdateAssignedContactArgs
   ): Promise<AssignedContact | null> {
@@ -99,6 +139,11 @@ export class AssignedContactResolverBase {
   }
 
   @graphql.Mutation(() => AssignedContact)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "delete",
+    possession: "any",
+  })
   async deleteAssignedContact(
     @graphql.Args() args: DeleteAssignedContactArgs
   ): Promise<AssignedContact | null> {
@@ -114,9 +159,15 @@ export class AssignedContactResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => Contact, {
     nullable: true,
     name: "contact",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Contact",
+    action: "read",
+    possession: "any",
   })
   async getContact(
     @graphql.Parent() parent: AssignedContact

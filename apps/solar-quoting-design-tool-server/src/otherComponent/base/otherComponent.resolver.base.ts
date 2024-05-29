@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OtherComponent } from "./OtherComponent";
 import { OtherComponentCountArgs } from "./OtherComponentCountArgs";
 import { OtherComponentFindManyArgs } from "./OtherComponentFindManyArgs";
 import { OtherComponentFindUniqueArgs } from "./OtherComponentFindUniqueArgs";
 import { DeleteOtherComponentArgs } from "./DeleteOtherComponentArgs";
 import { OtherComponentService } from "../otherComponent.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => OtherComponent)
 export class OtherComponentResolverBase {
-  constructor(protected readonly service: OtherComponentService) {}
+  constructor(
+    protected readonly service: OtherComponentService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "read",
+    possession: "any",
+  })
   async _otherComponentsMeta(
     @graphql.Args() args: OtherComponentCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class OtherComponentResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [OtherComponent])
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "read",
+    possession: "any",
+  })
   async otherComponents(
     @graphql.Args() args: OtherComponentFindManyArgs
   ): Promise<OtherComponent[]> {
     return this.service.otherComponents(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => OtherComponent, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "read",
+    possession: "own",
+  })
   async otherComponent(
     @graphql.Args() args: OtherComponentFindUniqueArgs
   ): Promise<OtherComponent | null> {
@@ -51,6 +78,11 @@ export class OtherComponentResolverBase {
   }
 
   @graphql.Mutation(() => OtherComponent)
+  @nestAccessControl.UseRoles({
+    resource: "OtherComponent",
+    action: "delete",
+    possession: "any",
+  })
   async deleteOtherComponent(
     @graphql.Args() args: DeleteOtherComponentArgs
   ): Promise<OtherComponent | null> {

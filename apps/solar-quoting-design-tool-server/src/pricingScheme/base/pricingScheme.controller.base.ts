@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { PricingSchemeService } from "../pricingScheme.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PricingSchemeCreateInput } from "./PricingSchemeCreateInput";
 import { PricingScheme } from "./PricingScheme";
 import { PricingSchemeFindManyArgs } from "./PricingSchemeFindManyArgs";
 import { PricingSchemeWhereUniqueInput } from "./PricingSchemeWhereUniqueInput";
 import { PricingSchemeUpdateInput } from "./PricingSchemeUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class PricingSchemeControllerBase {
-  constructor(protected readonly service: PricingSchemeService) {}
+  constructor(
+    protected readonly service: PricingSchemeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: PricingScheme })
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createPricingScheme(
     @common.Body() data: PricingSchemeCreateInput
   ): Promise<PricingScheme> {
@@ -40,9 +58,18 @@ export class PricingSchemeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [PricingScheme] })
   @ApiNestedQuery(PricingSchemeFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async pricingSchemes(
     @common.Req() request: Request
   ): Promise<PricingScheme[]> {
@@ -57,9 +84,18 @@ export class PricingSchemeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: PricingScheme })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async pricingScheme(
     @common.Param() params: PricingSchemeWhereUniqueInput
   ): Promise<PricingScheme | null> {
@@ -79,9 +115,18 @@ export class PricingSchemeControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: PricingScheme })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updatePricingScheme(
     @common.Param() params: PricingSchemeWhereUniqueInput,
     @common.Body() data: PricingSchemeUpdateInput
@@ -109,6 +154,14 @@ export class PricingSchemeControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: PricingScheme })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deletePricingScheme(
     @common.Param() params: PricingSchemeWhereUniqueInput
   ): Promise<PricingScheme | null> {

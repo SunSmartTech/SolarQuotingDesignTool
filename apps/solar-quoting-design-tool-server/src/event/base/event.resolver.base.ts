@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Event } from "./Event";
 import { EventCountArgs } from "./EventCountArgs";
 import { EventFindManyArgs } from "./EventFindManyArgs";
 import { EventFindUniqueArgs } from "./EventFindUniqueArgs";
 import { DeleteEventArgs } from "./DeleteEventArgs";
 import { EventService } from "../event.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Event)
 export class EventResolverBase {
-  constructor(protected readonly service: EventService) {}
+  constructor(
+    protected readonly service: EventService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "read",
+    possession: "any",
+  })
   async _eventsMeta(
     @graphql.Args() args: EventCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,12 +47,24 @@ export class EventResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Event])
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "read",
+    possession: "any",
+  })
   async events(@graphql.Args() args: EventFindManyArgs): Promise<Event[]> {
     return this.service.events(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Event, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "read",
+    possession: "own",
+  })
   async event(
     @graphql.Args() args: EventFindUniqueArgs
   ): Promise<Event | null> {
@@ -49,6 +76,11 @@ export class EventResolverBase {
   }
 
   @graphql.Mutation(() => Event)
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "delete",
+    possession: "any",
+  })
   async deleteEvent(
     @graphql.Args() args: DeleteEventArgs
   ): Promise<Event | null> {

@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Battery } from "./Battery";
 import { BatteryCountArgs } from "./BatteryCountArgs";
 import { BatteryFindManyArgs } from "./BatteryFindManyArgs";
 import { BatteryFindUniqueArgs } from "./BatteryFindUniqueArgs";
 import { DeleteBatteryArgs } from "./DeleteBatteryArgs";
 import { BatteryService } from "../battery.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Battery)
 export class BatteryResolverBase {
-  constructor(protected readonly service: BatteryService) {}
+  constructor(
+    protected readonly service: BatteryService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "read",
+    possession: "any",
+  })
   async _batteriesMeta(
     @graphql.Args() args: BatteryCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class BatteryResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Battery])
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "read",
+    possession: "any",
+  })
   async batteries(
     @graphql.Args() args: BatteryFindManyArgs
   ): Promise<Battery[]> {
     return this.service.batteries(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Battery, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "read",
+    possession: "own",
+  })
   async battery(
     @graphql.Args() args: BatteryFindUniqueArgs
   ): Promise<Battery | null> {
@@ -51,6 +78,11 @@ export class BatteryResolverBase {
   }
 
   @graphql.Mutation(() => Battery)
+  @nestAccessControl.UseRoles({
+    resource: "Battery",
+    action: "delete",
+    possession: "any",
+  })
   async deleteBattery(
     @graphql.Args() args: DeleteBatteryArgs
   ): Promise<Battery | null> {

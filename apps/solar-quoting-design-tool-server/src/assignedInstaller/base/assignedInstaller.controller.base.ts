@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AssignedInstallerService } from "../assignedInstaller.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AssignedInstallerCreateInput } from "./AssignedInstallerCreateInput";
 import { AssignedInstaller } from "./AssignedInstaller";
 import { AssignedInstallerFindManyArgs } from "./AssignedInstallerFindManyArgs";
 import { AssignedInstallerWhereUniqueInput } from "./AssignedInstallerWhereUniqueInput";
 import { AssignedInstallerUpdateInput } from "./AssignedInstallerUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AssignedInstallerControllerBase {
-  constructor(protected readonly service: AssignedInstallerService) {}
+  constructor(
+    protected readonly service: AssignedInstallerService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: AssignedInstaller })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedInstaller",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAssignedInstaller(
     @common.Body() data: AssignedInstallerCreateInput
   ): Promise<AssignedInstaller> {
@@ -41,9 +59,18 @@ export class AssignedInstallerControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [AssignedInstaller] })
   @ApiNestedQuery(AssignedInstallerFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedInstaller",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedInstallers(
     @common.Req() request: Request
   ): Promise<AssignedInstaller[]> {
@@ -59,9 +86,18 @@ export class AssignedInstallerControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: AssignedInstaller })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedInstaller",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedInstaller(
     @common.Param() params: AssignedInstallerWhereUniqueInput
   ): Promise<AssignedInstaller | null> {
@@ -82,9 +118,18 @@ export class AssignedInstallerControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: AssignedInstaller })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedInstaller",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAssignedInstaller(
     @common.Param() params: AssignedInstallerWhereUniqueInput,
     @common.Body() data: AssignedInstallerUpdateInput
@@ -113,6 +158,14 @@ export class AssignedInstallerControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: AssignedInstaller })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedInstaller",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAssignedInstaller(
     @common.Param() params: AssignedInstallerWhereUniqueInput
   ): Promise<AssignedInstaller | null> {

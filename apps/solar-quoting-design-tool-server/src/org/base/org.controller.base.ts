@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { OrgService } from "../org.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OrgCreateInput } from "./OrgCreateInput";
 import { Org } from "./Org";
 import { OrgFindManyArgs } from "./OrgFindManyArgs";
@@ -26,10 +30,24 @@ import { ProjectFindManyArgs } from "../../project/base/ProjectFindManyArgs";
 import { Project } from "../../project/base/Project";
 import { ProjectWhereUniqueInput } from "../../project/base/ProjectWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class OrgControllerBase {
-  constructor(protected readonly service: OrgService) {}
+  constructor(
+    protected readonly service: OrgService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Org })
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createOrg(@common.Body() data: OrgCreateInput): Promise<Org> {
     return await this.service.createOrg({
       data: data,
@@ -42,9 +60,18 @@ export class OrgControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Org] })
   @ApiNestedQuery(OrgFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async orgs(@common.Req() request: Request): Promise<Org[]> {
     const args = plainToClass(OrgFindManyArgs, request.query);
     return this.service.orgs({
@@ -58,9 +85,18 @@ export class OrgControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Org })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async org(@common.Param() params: OrgWhereUniqueInput): Promise<Org | null> {
     const result = await this.service.org({
       where: params,
@@ -79,9 +115,18 @@ export class OrgControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Org })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateOrg(
     @common.Param() params: OrgWhereUniqueInput,
     @common.Body() data: OrgUpdateInput
@@ -110,6 +155,14 @@ export class OrgControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Org })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteOrg(
     @common.Param() params: OrgWhereUniqueInput
   ): Promise<Org | null> {
@@ -133,8 +186,14 @@ export class OrgControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/projects")
   @ApiNestedQuery(ProjectFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Project",
+    action: "read",
+    possession: "any",
+  })
   async findProjects(
     @common.Req() request: Request,
     @common.Param() params: OrgWhereUniqueInput
@@ -166,6 +225,11 @@ export class OrgControllerBase {
   }
 
   @common.Post("/:id/projects")
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "update",
+    possession: "any",
+  })
   async connectProjects(
     @common.Param() params: OrgWhereUniqueInput,
     @common.Body() body: ProjectWhereUniqueInput[]
@@ -183,6 +247,11 @@ export class OrgControllerBase {
   }
 
   @common.Patch("/:id/projects")
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "update",
+    possession: "any",
+  })
   async updateProjects(
     @common.Param() params: OrgWhereUniqueInput,
     @common.Body() body: ProjectWhereUniqueInput[]
@@ -200,6 +269,11 @@ export class OrgControllerBase {
   }
 
   @common.Delete("/:id/projects")
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "update",
+    possession: "any",
+  })
   async disconnectProjects(
     @common.Param() params: OrgWhereUniqueInput,
     @common.Body() body: ProjectWhereUniqueInput[]

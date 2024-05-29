@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Inverter } from "./Inverter";
 import { InverterCountArgs } from "./InverterCountArgs";
 import { InverterFindManyArgs } from "./InverterFindManyArgs";
 import { InverterFindUniqueArgs } from "./InverterFindUniqueArgs";
 import { DeleteInverterArgs } from "./DeleteInverterArgs";
 import { InverterService } from "../inverter.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Inverter)
 export class InverterResolverBase {
-  constructor(protected readonly service: InverterService) {}
+  constructor(
+    protected readonly service: InverterService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "read",
+    possession: "any",
+  })
   async _invertersMeta(
     @graphql.Args() args: InverterCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class InverterResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Inverter])
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "read",
+    possession: "any",
+  })
   async inverters(
     @graphql.Args() args: InverterFindManyArgs
   ): Promise<Inverter[]> {
     return this.service.inverters(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Inverter, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "read",
+    possession: "own",
+  })
   async inverter(
     @graphql.Args() args: InverterFindUniqueArgs
   ): Promise<Inverter | null> {
@@ -51,6 +78,11 @@ export class InverterResolverBase {
   }
 
   @graphql.Mutation(() => Inverter)
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "delete",
+    possession: "any",
+  })
   async deleteInverter(
     @graphql.Args() args: DeleteInverterArgs
   ): Promise<Inverter | null> {

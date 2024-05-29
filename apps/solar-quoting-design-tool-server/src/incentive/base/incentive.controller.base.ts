@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { IncentiveService } from "../incentive.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { IncentiveCreateInput } from "./IncentiveCreateInput";
 import { Incentive } from "./Incentive";
 import { IncentiveFindManyArgs } from "./IncentiveFindManyArgs";
 import { IncentiveWhereUniqueInput } from "./IncentiveWhereUniqueInput";
 import { IncentiveUpdateInput } from "./IncentiveUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class IncentiveControllerBase {
-  constructor(protected readonly service: IncentiveService) {}
+  constructor(
+    protected readonly service: IncentiveService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Incentive })
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createIncentive(
     @common.Body() data: IncentiveCreateInput
   ): Promise<Incentive> {
@@ -40,9 +58,18 @@ export class IncentiveControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Incentive] })
   @ApiNestedQuery(IncentiveFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async incentives(@common.Req() request: Request): Promise<Incentive[]> {
     const args = plainToClass(IncentiveFindManyArgs, request.query);
     return this.service.incentives({
@@ -55,9 +82,18 @@ export class IncentiveControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Incentive })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async incentive(
     @common.Param() params: IncentiveWhereUniqueInput
   ): Promise<Incentive | null> {
@@ -77,9 +113,18 @@ export class IncentiveControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Incentive })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateIncentive(
     @common.Param() params: IncentiveWhereUniqueInput,
     @common.Body() data: IncentiveUpdateInput
@@ -107,6 +152,14 @@ export class IncentiveControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Incentive })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Incentive",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteIncentive(
     @common.Param() params: IncentiveWhereUniqueInput
   ): Promise<Incentive | null> {

@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { LeadCaptureForm } from "./LeadCaptureForm";
 import { LeadCaptureFormCountArgs } from "./LeadCaptureFormCountArgs";
 import { LeadCaptureFormFindManyArgs } from "./LeadCaptureFormFindManyArgs";
 import { LeadCaptureFormFindUniqueArgs } from "./LeadCaptureFormFindUniqueArgs";
 import { DeleteLeadCaptureFormArgs } from "./DeleteLeadCaptureFormArgs";
 import { LeadCaptureFormService } from "../leadCaptureForm.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => LeadCaptureForm)
 export class LeadCaptureFormResolverBase {
-  constructor(protected readonly service: LeadCaptureFormService) {}
+  constructor(
+    protected readonly service: LeadCaptureFormService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "read",
+    possession: "any",
+  })
   async _leadCaptureFormsMeta(
     @graphql.Args() args: LeadCaptureFormCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class LeadCaptureFormResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [LeadCaptureForm])
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "read",
+    possession: "any",
+  })
   async leadCaptureForms(
     @graphql.Args() args: LeadCaptureFormFindManyArgs
   ): Promise<LeadCaptureForm[]> {
     return this.service.leadCaptureForms(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => LeadCaptureForm, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "read",
+    possession: "own",
+  })
   async leadCaptureForm(
     @graphql.Args() args: LeadCaptureFormFindUniqueArgs
   ): Promise<LeadCaptureForm | null> {
@@ -51,6 +78,11 @@ export class LeadCaptureFormResolverBase {
   }
 
   @graphql.Mutation(() => LeadCaptureForm)
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "delete",
+    possession: "any",
+  })
   async deleteLeadCaptureForm(
     @graphql.Args() args: DeleteLeadCaptureFormArgs
   ): Promise<LeadCaptureForm | null> {

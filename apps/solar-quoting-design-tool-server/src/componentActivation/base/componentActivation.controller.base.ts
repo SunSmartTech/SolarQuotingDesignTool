@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ComponentActivationService } from "../componentActivation.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ComponentActivationCreateInput } from "./ComponentActivationCreateInput";
 import { ComponentActivation } from "./ComponentActivation";
 import { ComponentActivationFindManyArgs } from "./ComponentActivationFindManyArgs";
 import { ComponentActivationWhereUniqueInput } from "./ComponentActivationWhereUniqueInput";
 import { ComponentActivationUpdateInput } from "./ComponentActivationUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ComponentActivationControllerBase {
-  constructor(protected readonly service: ComponentActivationService) {}
+  constructor(
+    protected readonly service: ComponentActivationService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: ComponentActivation })
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createComponentActivation(
     @common.Body() data: ComponentActivationCreateInput
   ): Promise<ComponentActivation> {
@@ -40,9 +58,18 @@ export class ComponentActivationControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [ComponentActivation] })
   @ApiNestedQuery(ComponentActivationFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async componentActivations(
     @common.Req() request: Request
   ): Promise<ComponentActivation[]> {
@@ -57,9 +84,18 @@ export class ComponentActivationControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: ComponentActivation })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async componentActivation(
     @common.Param() params: ComponentActivationWhereUniqueInput
   ): Promise<ComponentActivation | null> {
@@ -79,9 +115,18 @@ export class ComponentActivationControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: ComponentActivation })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateComponentActivation(
     @common.Param() params: ComponentActivationWhereUniqueInput,
     @common.Body() data: ComponentActivationUpdateInput
@@ -109,6 +154,14 @@ export class ComponentActivationControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: ComponentActivation })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteComponentActivation(
     @common.Param() params: ComponentActivationWhereUniqueInput
   ): Promise<ComponentActivation | null> {

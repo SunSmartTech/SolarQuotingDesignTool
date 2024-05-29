@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { RoofTypeService } from "../roofType.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { RoofTypeCreateInput } from "./RoofTypeCreateInput";
 import { RoofType } from "./RoofType";
 import { RoofTypeFindManyArgs } from "./RoofTypeFindManyArgs";
 import { RoofTypeWhereUniqueInput } from "./RoofTypeWhereUniqueInput";
 import { RoofTypeUpdateInput } from "./RoofTypeUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class RoofTypeControllerBase {
-  constructor(protected readonly service: RoofTypeService) {}
+  constructor(
+    protected readonly service: RoofTypeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: RoofType })
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createRoofType(
     @common.Body() data: RoofTypeCreateInput
   ): Promise<RoofType> {
@@ -40,9 +58,18 @@ export class RoofTypeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [RoofType] })
   @ApiNestedQuery(RoofTypeFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async roofTypes(@common.Req() request: Request): Promise<RoofType[]> {
     const args = plainToClass(RoofTypeFindManyArgs, request.query);
     return this.service.roofTypes({
@@ -55,9 +82,18 @@ export class RoofTypeControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: RoofType })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async roofType(
     @common.Param() params: RoofTypeWhereUniqueInput
   ): Promise<RoofType | null> {
@@ -77,9 +113,18 @@ export class RoofTypeControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: RoofType })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateRoofType(
     @common.Param() params: RoofTypeWhereUniqueInput,
     @common.Body() data: RoofTypeUpdateInput
@@ -107,6 +152,14 @@ export class RoofTypeControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: RoofType })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "RoofType",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteRoofType(
     @common.Param() params: RoofTypeWhereUniqueInput
   ): Promise<RoofType | null> {

@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AssignedSiteInspector } from "./AssignedSiteInspector";
 import { AssignedSiteInspectorCountArgs } from "./AssignedSiteInspectorCountArgs";
 import { AssignedSiteInspectorFindManyArgs } from "./AssignedSiteInspectorFindManyArgs";
@@ -21,10 +27,20 @@ import { CreateAssignedSiteInspectorArgs } from "./CreateAssignedSiteInspectorAr
 import { UpdateAssignedSiteInspectorArgs } from "./UpdateAssignedSiteInspectorArgs";
 import { DeleteAssignedSiteInspectorArgs } from "./DeleteAssignedSiteInspectorArgs";
 import { AssignedSiteInspectorService } from "../assignedSiteInspector.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => AssignedSiteInspector)
 export class AssignedSiteInspectorResolverBase {
-  constructor(protected readonly service: AssignedSiteInspectorService) {}
+  constructor(
+    protected readonly service: AssignedSiteInspectorService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "read",
+    possession: "any",
+  })
   async _assignedSiteInspectorsMeta(
     @graphql.Args() args: AssignedSiteInspectorCountArgs
   ): Promise<MetaQueryPayload> {
@@ -34,14 +50,26 @@ export class AssignedSiteInspectorResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [AssignedSiteInspector])
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "read",
+    possession: "any",
+  })
   async assignedSiteInspectors(
     @graphql.Args() args: AssignedSiteInspectorFindManyArgs
   ): Promise<AssignedSiteInspector[]> {
     return this.service.assignedSiteInspectors(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => AssignedSiteInspector, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "read",
+    possession: "own",
+  })
   async assignedSiteInspector(
     @graphql.Args() args: AssignedSiteInspectorFindUniqueArgs
   ): Promise<AssignedSiteInspector | null> {
@@ -52,7 +80,13 @@ export class AssignedSiteInspectorResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedSiteInspector)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "create",
+    possession: "any",
+  })
   async createAssignedSiteInspector(
     @graphql.Args() args: CreateAssignedSiteInspectorArgs
   ): Promise<AssignedSiteInspector> {
@@ -62,7 +96,13 @@ export class AssignedSiteInspectorResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedSiteInspector)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "update",
+    possession: "any",
+  })
   async updateAssignedSiteInspector(
     @graphql.Args() args: UpdateAssignedSiteInspectorArgs
   ): Promise<AssignedSiteInspector | null> {
@@ -82,6 +122,11 @@ export class AssignedSiteInspectorResolverBase {
   }
 
   @graphql.Mutation(() => AssignedSiteInspector)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "delete",
+    possession: "any",
+  })
   async deleteAssignedSiteInspector(
     @graphql.Args() args: DeleteAssignedSiteInspectorArgs
   ): Promise<AssignedSiteInspector | null> {

@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { DocumentTemplateService } from "../documentTemplate.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { DocumentTemplateCreateInput } from "./DocumentTemplateCreateInput";
 import { DocumentTemplate } from "./DocumentTemplate";
 import { DocumentTemplateFindManyArgs } from "./DocumentTemplateFindManyArgs";
 import { DocumentTemplateWhereUniqueInput } from "./DocumentTemplateWhereUniqueInput";
 import { DocumentTemplateUpdateInput } from "./DocumentTemplateUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class DocumentTemplateControllerBase {
-  constructor(protected readonly service: DocumentTemplateService) {}
+  constructor(
+    protected readonly service: DocumentTemplateService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: DocumentTemplate })
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createDocumentTemplate(
     @common.Body() data: DocumentTemplateCreateInput
   ): Promise<DocumentTemplate> {
@@ -40,9 +58,18 @@ export class DocumentTemplateControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [DocumentTemplate] })
   @ApiNestedQuery(DocumentTemplateFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async documentTemplates(
     @common.Req() request: Request
   ): Promise<DocumentTemplate[]> {
@@ -57,9 +84,18 @@ export class DocumentTemplateControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: DocumentTemplate })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async documentTemplate(
     @common.Param() params: DocumentTemplateWhereUniqueInput
   ): Promise<DocumentTemplate | null> {
@@ -79,9 +115,18 @@ export class DocumentTemplateControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: DocumentTemplate })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateDocumentTemplate(
     @common.Param() params: DocumentTemplateWhereUniqueInput,
     @common.Body() data: DocumentTemplateUpdateInput
@@ -109,6 +154,14 @@ export class DocumentTemplateControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: DocumentTemplate })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteDocumentTemplate(
     @common.Param() params: DocumentTemplateWhereUniqueInput
   ): Promise<DocumentTemplate | null> {

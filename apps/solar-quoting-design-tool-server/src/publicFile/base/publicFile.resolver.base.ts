@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PublicFile } from "./PublicFile";
 import { PublicFileCountArgs } from "./PublicFileCountArgs";
 import { PublicFileFindManyArgs } from "./PublicFileFindManyArgs";
 import { PublicFileFindUniqueArgs } from "./PublicFileFindUniqueArgs";
 import { DeletePublicFileArgs } from "./DeletePublicFileArgs";
 import { PublicFileService } from "../publicFile.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => PublicFile)
 export class PublicFileResolverBase {
-  constructor(protected readonly service: PublicFileService) {}
+  constructor(
+    protected readonly service: PublicFileService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "read",
+    possession: "any",
+  })
   async _publicFilesMeta(
     @graphql.Args() args: PublicFileCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class PublicFileResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [PublicFile])
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "read",
+    possession: "any",
+  })
   async publicFiles(
     @graphql.Args() args: PublicFileFindManyArgs
   ): Promise<PublicFile[]> {
     return this.service.publicFiles(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => PublicFile, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "read",
+    possession: "own",
+  })
   async publicFile(
     @graphql.Args() args: PublicFileFindUniqueArgs
   ): Promise<PublicFile | null> {
@@ -51,6 +78,11 @@ export class PublicFileResolverBase {
   }
 
   @graphql.Mutation(() => PublicFile)
+  @nestAccessControl.UseRoles({
+    resource: "PublicFile",
+    action: "delete",
+    possession: "any",
+  })
   async deletePublicFile(
     @graphql.Args() args: DeletePublicFileArgs
   ): Promise<PublicFile | null> {

@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { TeamService } from "../team.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { TeamCreateInput } from "./TeamCreateInput";
 import { Team } from "./Team";
 import { TeamFindManyArgs } from "./TeamFindManyArgs";
 import { TeamWhereUniqueInput } from "./TeamWhereUniqueInput";
 import { TeamUpdateInput } from "./TeamUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class TeamControllerBase {
-  constructor(protected readonly service: TeamService) {}
+  constructor(
+    protected readonly service: TeamService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Team })
+  @nestAccessControl.UseRoles({
+    resource: "Team",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createTeam(@common.Body() data: TeamCreateInput): Promise<Team> {
     return await this.service.createTeam({
       data: data,
@@ -38,9 +56,18 @@ export class TeamControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Team] })
   @ApiNestedQuery(TeamFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Team",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async teams(@common.Req() request: Request): Promise<Team[]> {
     const args = plainToClass(TeamFindManyArgs, request.query);
     return this.service.teams({
@@ -53,9 +80,18 @@ export class TeamControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Team })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Team",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async team(
     @common.Param() params: TeamWhereUniqueInput
   ): Promise<Team | null> {
@@ -75,9 +111,18 @@ export class TeamControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Team })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Team",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateTeam(
     @common.Param() params: TeamWhereUniqueInput,
     @common.Body() data: TeamUpdateInput
@@ -105,6 +150,14 @@ export class TeamControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Team })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Team",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteTeam(
     @common.Param() params: TeamWhereUniqueInput
   ): Promise<Team | null> {

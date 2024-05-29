@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { SystemService } from "../system.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { SystemCreateInput } from "./SystemCreateInput";
 import { System } from "./System";
 import { SystemFindManyArgs } from "./SystemFindManyArgs";
 import { SystemWhereUniqueInput } from "./SystemWhereUniqueInput";
 import { SystemUpdateInput } from "./SystemUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class SystemControllerBase {
-  constructor(protected readonly service: SystemService) {}
+  constructor(
+    protected readonly service: SystemService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: System })
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createSystem(@common.Body() data: SystemCreateInput): Promise<System> {
     return await this.service.createSystem({
       data: data,
@@ -40,9 +58,18 @@ export class SystemControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [System] })
   @ApiNestedQuery(SystemFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async systems(@common.Req() request: Request): Promise<System[]> {
     const args = plainToClass(SystemFindManyArgs, request.query);
     return this.service.systems({
@@ -57,9 +84,18 @@ export class SystemControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: System })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async system(
     @common.Param() params: SystemWhereUniqueInput
   ): Promise<System | null> {
@@ -81,9 +117,18 @@ export class SystemControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: System })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateSystem(
     @common.Param() params: SystemWhereUniqueInput,
     @common.Body() data: SystemUpdateInput
@@ -113,6 +158,14 @@ export class SystemControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: System })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "System",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteSystem(
     @common.Param() params: SystemWhereUniqueInput
   ): Promise<System | null> {

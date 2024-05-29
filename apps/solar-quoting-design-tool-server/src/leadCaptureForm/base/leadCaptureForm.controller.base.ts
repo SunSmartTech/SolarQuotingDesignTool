@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { LeadCaptureFormService } from "../leadCaptureForm.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { LeadCaptureFormCreateInput } from "./LeadCaptureFormCreateInput";
 import { LeadCaptureForm } from "./LeadCaptureForm";
 import { LeadCaptureFormFindManyArgs } from "./LeadCaptureFormFindManyArgs";
 import { LeadCaptureFormWhereUniqueInput } from "./LeadCaptureFormWhereUniqueInput";
 import { LeadCaptureFormUpdateInput } from "./LeadCaptureFormUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class LeadCaptureFormControllerBase {
-  constructor(protected readonly service: LeadCaptureFormService) {}
+  constructor(
+    protected readonly service: LeadCaptureFormService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: LeadCaptureForm })
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createLeadCaptureForm(
     @common.Body() data: LeadCaptureFormCreateInput
   ): Promise<LeadCaptureForm> {
@@ -40,9 +58,18 @@ export class LeadCaptureFormControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [LeadCaptureForm] })
   @ApiNestedQuery(LeadCaptureFormFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async leadCaptureForms(
     @common.Req() request: Request
   ): Promise<LeadCaptureForm[]> {
@@ -57,9 +84,18 @@ export class LeadCaptureFormControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: LeadCaptureForm })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async leadCaptureForm(
     @common.Param() params: LeadCaptureFormWhereUniqueInput
   ): Promise<LeadCaptureForm | null> {
@@ -79,9 +115,18 @@ export class LeadCaptureFormControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: LeadCaptureForm })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateLeadCaptureForm(
     @common.Param() params: LeadCaptureFormWhereUniqueInput,
     @common.Body() data: LeadCaptureFormUpdateInput
@@ -109,6 +154,14 @@ export class LeadCaptureFormControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: LeadCaptureForm })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "LeadCaptureForm",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteLeadCaptureForm(
     @common.Param() params: LeadCaptureFormWhereUniqueInput
   ): Promise<LeadCaptureForm | null> {

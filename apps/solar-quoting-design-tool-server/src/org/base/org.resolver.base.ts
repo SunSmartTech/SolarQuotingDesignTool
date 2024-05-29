@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Org } from "./Org";
 import { OrgCountArgs } from "./OrgCountArgs";
 import { OrgFindManyArgs } from "./OrgFindManyArgs";
@@ -23,10 +29,20 @@ import { DeleteOrgArgs } from "./DeleteOrgArgs";
 import { ProjectFindManyArgs } from "../../project/base/ProjectFindManyArgs";
 import { Project } from "../../project/base/Project";
 import { OrgService } from "../org.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Org)
 export class OrgResolverBase {
-  constructor(protected readonly service: OrgService) {}
+  constructor(
+    protected readonly service: OrgService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "read",
+    possession: "any",
+  })
   async _orgsMeta(
     @graphql.Args() args: OrgCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,12 +52,24 @@ export class OrgResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Org])
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "read",
+    possession: "any",
+  })
   async orgs(@graphql.Args() args: OrgFindManyArgs): Promise<Org[]> {
     return this.service.orgs(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Org, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "read",
+    possession: "own",
+  })
   async org(@graphql.Args() args: OrgFindUniqueArgs): Promise<Org | null> {
     const result = await this.service.org(args);
     if (result === null) {
@@ -50,7 +78,13 @@ export class OrgResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Org)
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "create",
+    possession: "any",
+  })
   async createOrg(@graphql.Args() args: CreateOrgArgs): Promise<Org> {
     return await this.service.createOrg({
       ...args,
@@ -58,7 +92,13 @@ export class OrgResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Org)
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "update",
+    possession: "any",
+  })
   async updateOrg(@graphql.Args() args: UpdateOrgArgs): Promise<Org | null> {
     try {
       return await this.service.updateOrg({
@@ -76,6 +116,11 @@ export class OrgResolverBase {
   }
 
   @graphql.Mutation(() => Org)
+  @nestAccessControl.UseRoles({
+    resource: "Org",
+    action: "delete",
+    possession: "any",
+  })
   async deleteOrg(@graphql.Args() args: DeleteOrgArgs): Promise<Org | null> {
     try {
       return await this.service.deleteOrg(args);
@@ -89,7 +134,13 @@ export class OrgResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => [Project], { name: "projects" })
+  @nestAccessControl.UseRoles({
+    resource: "Project",
+    action: "read",
+    possession: "any",
+  })
   async findProjects(
     @graphql.Parent() parent: Org,
     @graphql.Args() args: ProjectFindManyArgs

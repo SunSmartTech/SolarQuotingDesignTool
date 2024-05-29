@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PrivateFile } from "./PrivateFile";
 import { PrivateFileCountArgs } from "./PrivateFileCountArgs";
 import { PrivateFileFindManyArgs } from "./PrivateFileFindManyArgs";
 import { PrivateFileFindUniqueArgs } from "./PrivateFileFindUniqueArgs";
 import { DeletePrivateFileArgs } from "./DeletePrivateFileArgs";
 import { PrivateFileService } from "../privateFile.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => PrivateFile)
 export class PrivateFileResolverBase {
-  constructor(protected readonly service: PrivateFileService) {}
+  constructor(
+    protected readonly service: PrivateFileService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "PrivateFile",
+    action: "read",
+    possession: "any",
+  })
   async _privateFilesMeta(
     @graphql.Args() args: PrivateFileCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class PrivateFileResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [PrivateFile])
+  @nestAccessControl.UseRoles({
+    resource: "PrivateFile",
+    action: "read",
+    possession: "any",
+  })
   async privateFiles(
     @graphql.Args() args: PrivateFileFindManyArgs
   ): Promise<PrivateFile[]> {
     return this.service.privateFiles(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => PrivateFile, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "PrivateFile",
+    action: "read",
+    possession: "own",
+  })
   async privateFile(
     @graphql.Args() args: PrivateFileFindUniqueArgs
   ): Promise<PrivateFile | null> {
@@ -51,6 +78,11 @@ export class PrivateFileResolverBase {
   }
 
   @graphql.Mutation(() => PrivateFile)
+  @nestAccessControl.UseRoles({
+    resource: "PrivateFile",
+    action: "delete",
+    possession: "any",
+  })
   async deletePrivateFile(
     @graphql.Args() args: DeletePrivateFileArgs
   ): Promise<PrivateFile | null> {

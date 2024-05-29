@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { SetbackService } from "../setback.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { SetbackCreateInput } from "./SetbackCreateInput";
 import { Setback } from "./Setback";
 import { SetbackFindManyArgs } from "./SetbackFindManyArgs";
 import { SetbackWhereUniqueInput } from "./SetbackWhereUniqueInput";
 import { SetbackUpdateInput } from "./SetbackUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class SetbackControllerBase {
-  constructor(protected readonly service: SetbackService) {}
+  constructor(
+    protected readonly service: SetbackService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Setback })
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createSetback(
     @common.Body() data: SetbackCreateInput
   ): Promise<Setback> {
@@ -40,9 +58,18 @@ export class SetbackControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Setback] })
   @ApiNestedQuery(SetbackFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async setbacks(@common.Req() request: Request): Promise<Setback[]> {
     const args = plainToClass(SetbackFindManyArgs, request.query);
     return this.service.setbacks({
@@ -55,9 +82,18 @@ export class SetbackControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Setback })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async setback(
     @common.Param() params: SetbackWhereUniqueInput
   ): Promise<Setback | null> {
@@ -77,9 +113,18 @@ export class SetbackControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Setback })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateSetback(
     @common.Param() params: SetbackWhereUniqueInput,
     @common.Body() data: SetbackUpdateInput
@@ -107,6 +152,14 @@ export class SetbackControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Setback })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteSetback(
     @common.Param() params: SetbackWhereUniqueInput
   ): Promise<Setback | null> {

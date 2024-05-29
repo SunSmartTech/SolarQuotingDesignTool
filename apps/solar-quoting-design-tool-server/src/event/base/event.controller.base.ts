@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { EventService } from "../event.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { EventCreateInput } from "./EventCreateInput";
 import { Event } from "./Event";
 import { EventFindManyArgs } from "./EventFindManyArgs";
 import { EventWhereUniqueInput } from "./EventWhereUniqueInput";
 import { EventUpdateInput } from "./EventUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class EventControllerBase {
-  constructor(protected readonly service: EventService) {}
+  constructor(
+    protected readonly service: EventService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Event })
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createEvent(@common.Body() data: EventCreateInput): Promise<Event> {
     return await this.service.createEvent({
       data: data,
@@ -38,9 +56,18 @@ export class EventControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Event] })
   @ApiNestedQuery(EventFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async events(@common.Req() request: Request): Promise<Event[]> {
     const args = plainToClass(EventFindManyArgs, request.query);
     return this.service.events({
@@ -53,9 +80,18 @@ export class EventControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Event })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async event(
     @common.Param() params: EventWhereUniqueInput
   ): Promise<Event | null> {
@@ -75,9 +111,18 @@ export class EventControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Event })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateEvent(
     @common.Param() params: EventWhereUniqueInput,
     @common.Body() data: EventUpdateInput
@@ -105,6 +150,14 @@ export class EventControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Event })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Event",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteEvent(
     @common.Param() params: EventWhereUniqueInput
   ): Promise<Event | null> {

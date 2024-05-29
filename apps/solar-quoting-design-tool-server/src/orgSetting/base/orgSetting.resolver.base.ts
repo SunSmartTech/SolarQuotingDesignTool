@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OrgSetting } from "./OrgSetting";
 import { OrgSettingCountArgs } from "./OrgSettingCountArgs";
 import { OrgSettingFindManyArgs } from "./OrgSettingFindManyArgs";
 import { OrgSettingFindUniqueArgs } from "./OrgSettingFindUniqueArgs";
 import { DeleteOrgSettingArgs } from "./DeleteOrgSettingArgs";
 import { OrgSettingService } from "../orgSetting.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => OrgSetting)
 export class OrgSettingResolverBase {
-  constructor(protected readonly service: OrgSettingService) {}
+  constructor(
+    protected readonly service: OrgSettingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "read",
+    possession: "any",
+  })
   async _orgSettingsMeta(
     @graphql.Args() args: OrgSettingCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class OrgSettingResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [OrgSetting])
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "read",
+    possession: "any",
+  })
   async orgSettings(
     @graphql.Args() args: OrgSettingFindManyArgs
   ): Promise<OrgSetting[]> {
     return this.service.orgSettings(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => OrgSetting, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "read",
+    possession: "own",
+  })
   async orgSetting(
     @graphql.Args() args: OrgSettingFindUniqueArgs
   ): Promise<OrgSetting | null> {
@@ -51,6 +78,11 @@ export class OrgSettingResolverBase {
   }
 
   @graphql.Mutation(() => OrgSetting)
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "delete",
+    possession: "any",
+  })
   async deleteOrgSetting(
     @graphql.Args() args: DeleteOrgSettingArgs
   ): Promise<OrgSetting | null> {

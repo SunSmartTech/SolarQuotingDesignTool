@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AssignedTeamMember } from "./AssignedTeamMember";
 import { AssignedTeamMemberCountArgs } from "./AssignedTeamMemberCountArgs";
 import { AssignedTeamMemberFindManyArgs } from "./AssignedTeamMemberFindManyArgs";
@@ -21,10 +27,20 @@ import { CreateAssignedTeamMemberArgs } from "./CreateAssignedTeamMemberArgs";
 import { UpdateAssignedTeamMemberArgs } from "./UpdateAssignedTeamMemberArgs";
 import { DeleteAssignedTeamMemberArgs } from "./DeleteAssignedTeamMemberArgs";
 import { AssignedTeamMemberService } from "../assignedTeamMember.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => AssignedTeamMember)
 export class AssignedTeamMemberResolverBase {
-  constructor(protected readonly service: AssignedTeamMemberService) {}
+  constructor(
+    protected readonly service: AssignedTeamMemberService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "read",
+    possession: "any",
+  })
   async _assignedTeamMembersMeta(
     @graphql.Args() args: AssignedTeamMemberCountArgs
   ): Promise<MetaQueryPayload> {
@@ -34,14 +50,26 @@ export class AssignedTeamMemberResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [AssignedTeamMember])
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "read",
+    possession: "any",
+  })
   async assignedTeamMembers(
     @graphql.Args() args: AssignedTeamMemberFindManyArgs
   ): Promise<AssignedTeamMember[]> {
     return this.service.assignedTeamMembers(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => AssignedTeamMember, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "read",
+    possession: "own",
+  })
   async assignedTeamMember(
     @graphql.Args() args: AssignedTeamMemberFindUniqueArgs
   ): Promise<AssignedTeamMember | null> {
@@ -52,7 +80,13 @@ export class AssignedTeamMemberResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedTeamMember)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "create",
+    possession: "any",
+  })
   async createAssignedTeamMember(
     @graphql.Args() args: CreateAssignedTeamMemberArgs
   ): Promise<AssignedTeamMember> {
@@ -62,7 +96,13 @@ export class AssignedTeamMemberResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => AssignedTeamMember)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "update",
+    possession: "any",
+  })
   async updateAssignedTeamMember(
     @graphql.Args() args: UpdateAssignedTeamMemberArgs
   ): Promise<AssignedTeamMember | null> {
@@ -82,6 +122,11 @@ export class AssignedTeamMemberResolverBase {
   }
 
   @graphql.Mutation(() => AssignedTeamMember)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "delete",
+    possession: "any",
+  })
   async deleteAssignedTeamMember(
     @graphql.Args() args: DeleteAssignedTeamMemberArgs
   ): Promise<AssignedTeamMember | null> {

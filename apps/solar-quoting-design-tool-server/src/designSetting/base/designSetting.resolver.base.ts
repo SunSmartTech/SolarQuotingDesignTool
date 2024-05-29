@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { DesignSetting } from "./DesignSetting";
 import { DesignSettingCountArgs } from "./DesignSettingCountArgs";
 import { DesignSettingFindManyArgs } from "./DesignSettingFindManyArgs";
 import { DesignSettingFindUniqueArgs } from "./DesignSettingFindUniqueArgs";
 import { DeleteDesignSettingArgs } from "./DeleteDesignSettingArgs";
 import { DesignSettingService } from "../designSetting.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => DesignSetting)
 export class DesignSettingResolverBase {
-  constructor(protected readonly service: DesignSettingService) {}
+  constructor(
+    protected readonly service: DesignSettingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "read",
+    possession: "any",
+  })
   async _designSettingsMeta(
     @graphql.Args() args: DesignSettingCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class DesignSettingResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [DesignSetting])
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "read",
+    possession: "any",
+  })
   async designSettings(
     @graphql.Args() args: DesignSettingFindManyArgs
   ): Promise<DesignSetting[]> {
     return this.service.designSettings(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => DesignSetting, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "read",
+    possession: "own",
+  })
   async designSetting(
     @graphql.Args() args: DesignSettingFindUniqueArgs
   ): Promise<DesignSetting | null> {
@@ -51,6 +78,11 @@ export class DesignSettingResolverBase {
   }
 
   @graphql.Mutation(() => DesignSetting)
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "delete",
+    possession: "any",
+  })
   async deleteDesignSetting(
     @graphql.Args() args: DeleteDesignSettingArgs
   ): Promise<DesignSetting | null> {

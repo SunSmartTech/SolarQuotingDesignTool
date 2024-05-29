@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { UtilityTariff } from "./UtilityTariff";
 import { UtilityTariffCountArgs } from "./UtilityTariffCountArgs";
 import { UtilityTariffFindManyArgs } from "./UtilityTariffFindManyArgs";
 import { UtilityTariffFindUniqueArgs } from "./UtilityTariffFindUniqueArgs";
 import { DeleteUtilityTariffArgs } from "./DeleteUtilityTariffArgs";
 import { UtilityTariffService } from "../utilityTariff.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => UtilityTariff)
 export class UtilityTariffResolverBase {
-  constructor(protected readonly service: UtilityTariffService) {}
+  constructor(
+    protected readonly service: UtilityTariffService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "UtilityTariff",
+    action: "read",
+    possession: "any",
+  })
   async _utilityTariffsMeta(
     @graphql.Args() args: UtilityTariffCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class UtilityTariffResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [UtilityTariff])
+  @nestAccessControl.UseRoles({
+    resource: "UtilityTariff",
+    action: "read",
+    possession: "any",
+  })
   async utilityTariffs(
     @graphql.Args() args: UtilityTariffFindManyArgs
   ): Promise<UtilityTariff[]> {
     return this.service.utilityTariffs(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => UtilityTariff, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "UtilityTariff",
+    action: "read",
+    possession: "own",
+  })
   async utilityTariff(
     @graphql.Args() args: UtilityTariffFindUniqueArgs
   ): Promise<UtilityTariff | null> {
@@ -51,6 +78,11 @@ export class UtilityTariffResolverBase {
   }
 
   @graphql.Mutation(() => UtilityTariff)
+  @nestAccessControl.UseRoles({
+    resource: "UtilityTariff",
+    action: "delete",
+    possession: "any",
+  })
   async deleteUtilityTariff(
     @graphql.Args() args: DeleteUtilityTariffArgs
   ): Promise<UtilityTariff | null> {

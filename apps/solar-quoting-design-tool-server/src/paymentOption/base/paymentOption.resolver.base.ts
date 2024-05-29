@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PaymentOption } from "./PaymentOption";
 import { PaymentOptionCountArgs } from "./PaymentOptionCountArgs";
 import { PaymentOptionFindManyArgs } from "./PaymentOptionFindManyArgs";
 import { PaymentOptionFindUniqueArgs } from "./PaymentOptionFindUniqueArgs";
 import { DeletePaymentOptionArgs } from "./DeletePaymentOptionArgs";
 import { PaymentOptionService } from "../paymentOption.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => PaymentOption)
 export class PaymentOptionResolverBase {
-  constructor(protected readonly service: PaymentOptionService) {}
+  constructor(
+    protected readonly service: PaymentOptionService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "PaymentOption",
+    action: "read",
+    possession: "any",
+  })
   async _paymentOptionsMeta(
     @graphql.Args() args: PaymentOptionCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class PaymentOptionResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [PaymentOption])
+  @nestAccessControl.UseRoles({
+    resource: "PaymentOption",
+    action: "read",
+    possession: "any",
+  })
   async paymentOptions(
     @graphql.Args() args: PaymentOptionFindManyArgs
   ): Promise<PaymentOption[]> {
     return this.service.paymentOptions(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => PaymentOption, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "PaymentOption",
+    action: "read",
+    possession: "own",
+  })
   async paymentOption(
     @graphql.Args() args: PaymentOptionFindUniqueArgs
   ): Promise<PaymentOption | null> {
@@ -51,6 +78,11 @@ export class PaymentOptionResolverBase {
   }
 
   @graphql.Mutation(() => PaymentOption)
+  @nestAccessControl.UseRoles({
+    resource: "PaymentOption",
+    action: "delete",
+    possession: "any",
+  })
   async deletePaymentOption(
     @graphql.Args() args: DeletePaymentOptionArgs
   ): Promise<PaymentOption | null> {

@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { DocumentTemplate } from "./DocumentTemplate";
 import { DocumentTemplateCountArgs } from "./DocumentTemplateCountArgs";
 import { DocumentTemplateFindManyArgs } from "./DocumentTemplateFindManyArgs";
 import { DocumentTemplateFindUniqueArgs } from "./DocumentTemplateFindUniqueArgs";
 import { DeleteDocumentTemplateArgs } from "./DeleteDocumentTemplateArgs";
 import { DocumentTemplateService } from "../documentTemplate.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => DocumentTemplate)
 export class DocumentTemplateResolverBase {
-  constructor(protected readonly service: DocumentTemplateService) {}
+  constructor(
+    protected readonly service: DocumentTemplateService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "read",
+    possession: "any",
+  })
   async _documentTemplatesMeta(
     @graphql.Args() args: DocumentTemplateCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class DocumentTemplateResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [DocumentTemplate])
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "read",
+    possession: "any",
+  })
   async documentTemplates(
     @graphql.Args() args: DocumentTemplateFindManyArgs
   ): Promise<DocumentTemplate[]> {
     return this.service.documentTemplates(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => DocumentTemplate, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "read",
+    possession: "own",
+  })
   async documentTemplate(
     @graphql.Args() args: DocumentTemplateFindUniqueArgs
   ): Promise<DocumentTemplate | null> {
@@ -51,6 +78,11 @@ export class DocumentTemplateResolverBase {
   }
 
   @graphql.Mutation(() => DocumentTemplate)
+  @nestAccessControl.UseRoles({
+    resource: "DocumentTemplate",
+    action: "delete",
+    possession: "any",
+  })
   async deleteDocumentTemplate(
     @graphql.Args() args: DeleteDocumentTemplateArgs
   ): Promise<DocumentTemplate | null> {

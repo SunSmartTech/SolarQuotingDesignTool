@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Setback } from "./Setback";
 import { SetbackCountArgs } from "./SetbackCountArgs";
 import { SetbackFindManyArgs } from "./SetbackFindManyArgs";
 import { SetbackFindUniqueArgs } from "./SetbackFindUniqueArgs";
 import { DeleteSetbackArgs } from "./DeleteSetbackArgs";
 import { SetbackService } from "../setback.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Setback)
 export class SetbackResolverBase {
-  constructor(protected readonly service: SetbackService) {}
+  constructor(
+    protected readonly service: SetbackService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "read",
+    possession: "any",
+  })
   async _setbacksMeta(
     @graphql.Args() args: SetbackCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class SetbackResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Setback])
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "read",
+    possession: "any",
+  })
   async setbacks(
     @graphql.Args() args: SetbackFindManyArgs
   ): Promise<Setback[]> {
     return this.service.setbacks(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Setback, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "read",
+    possession: "own",
+  })
   async setback(
     @graphql.Args() args: SetbackFindUniqueArgs
   ): Promise<Setback | null> {
@@ -51,6 +78,11 @@ export class SetbackResolverBase {
   }
 
   @graphql.Mutation(() => Setback)
+  @nestAccessControl.UseRoles({
+    resource: "Setback",
+    action: "delete",
+    possession: "any",
+  })
   async deleteSetback(
     @graphql.Args() args: DeleteSetbackArgs
   ): Promise<Setback | null> {

@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { RoleService } from "../role.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { RoleCreateInput } from "./RoleCreateInput";
 import { Role } from "./Role";
 import { RoleFindManyArgs } from "./RoleFindManyArgs";
 import { RoleWhereUniqueInput } from "./RoleWhereUniqueInput";
 import { RoleUpdateInput } from "./RoleUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class RoleControllerBase {
-  constructor(protected readonly service: RoleService) {}
+  constructor(
+    protected readonly service: RoleService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Role })
+  @nestAccessControl.UseRoles({
+    resource: "Role",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createRole(@common.Body() data: RoleCreateInput): Promise<Role> {
     return await this.service.createRole({
       data: data,
@@ -38,9 +56,18 @@ export class RoleControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Role] })
   @ApiNestedQuery(RoleFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Role",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async roles(@common.Req() request: Request): Promise<Role[]> {
     const args = plainToClass(RoleFindManyArgs, request.query);
     return this.service.roles({
@@ -53,9 +80,18 @@ export class RoleControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Role })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Role",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async role(
     @common.Param() params: RoleWhereUniqueInput
   ): Promise<Role | null> {
@@ -75,9 +111,18 @@ export class RoleControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Role })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Role",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateRole(
     @common.Param() params: RoleWhereUniqueInput,
     @common.Body() data: RoleUpdateInput
@@ -105,6 +150,14 @@ export class RoleControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Role })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Role",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteRole(
     @common.Param() params: RoleWhereUniqueInput
   ): Promise<Role | null> {

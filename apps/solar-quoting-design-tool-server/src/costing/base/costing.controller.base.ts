@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { CostingService } from "../costing.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { CostingCreateInput } from "./CostingCreateInput";
 import { Costing } from "./Costing";
 import { CostingFindManyArgs } from "./CostingFindManyArgs";
 import { CostingWhereUniqueInput } from "./CostingWhereUniqueInput";
 import { CostingUpdateInput } from "./CostingUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class CostingControllerBase {
-  constructor(protected readonly service: CostingService) {}
+  constructor(
+    protected readonly service: CostingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Costing })
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createCosting(
     @common.Body() data: CostingCreateInput
   ): Promise<Costing> {
@@ -40,9 +58,18 @@ export class CostingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Costing] })
   @ApiNestedQuery(CostingFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async costings(@common.Req() request: Request): Promise<Costing[]> {
     const args = plainToClass(CostingFindManyArgs, request.query);
     return this.service.costings({
@@ -55,9 +82,18 @@ export class CostingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Costing })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async costing(
     @common.Param() params: CostingWhereUniqueInput
   ): Promise<Costing | null> {
@@ -77,9 +113,18 @@ export class CostingControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Costing })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateCosting(
     @common.Param() params: CostingWhereUniqueInput,
     @common.Body() data: CostingUpdateInput
@@ -107,6 +152,14 @@ export class CostingControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Costing })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteCosting(
     @common.Param() params: CostingWhereUniqueInput
   ): Promise<Costing | null> {

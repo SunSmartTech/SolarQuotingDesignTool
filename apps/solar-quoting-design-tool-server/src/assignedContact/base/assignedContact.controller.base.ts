@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AssignedContactService } from "../assignedContact.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AssignedContactCreateInput } from "./AssignedContactCreateInput";
 import { AssignedContact } from "./AssignedContact";
 import { AssignedContactFindManyArgs } from "./AssignedContactFindManyArgs";
 import { AssignedContactWhereUniqueInput } from "./AssignedContactWhereUniqueInput";
 import { AssignedContactUpdateInput } from "./AssignedContactUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AssignedContactControllerBase {
-  constructor(protected readonly service: AssignedContactService) {}
+  constructor(
+    protected readonly service: AssignedContactService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: AssignedContact })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAssignedContact(
     @common.Body() data: AssignedContactCreateInput
   ): Promise<AssignedContact> {
@@ -54,9 +72,18 @@ export class AssignedContactControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [AssignedContact] })
   @ApiNestedQuery(AssignedContactFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedContacts(
     @common.Req() request: Request
   ): Promise<AssignedContact[]> {
@@ -77,9 +104,18 @@ export class AssignedContactControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: AssignedContact })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedContact(
     @common.Param() params: AssignedContactWhereUniqueInput
   ): Promise<AssignedContact | null> {
@@ -105,9 +141,18 @@ export class AssignedContactControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: AssignedContact })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAssignedContact(
     @common.Param() params: AssignedContactWhereUniqueInput,
     @common.Body() data: AssignedContactUpdateInput
@@ -149,6 +194,14 @@ export class AssignedContactControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: AssignedContact })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedContact",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAssignedContact(
     @common.Param() params: AssignedContactWhereUniqueInput
   ): Promise<AssignedContact | null> {

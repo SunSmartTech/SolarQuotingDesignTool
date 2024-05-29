@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ComponentActivation } from "./ComponentActivation";
 import { ComponentActivationCountArgs } from "./ComponentActivationCountArgs";
 import { ComponentActivationFindManyArgs } from "./ComponentActivationFindManyArgs";
 import { ComponentActivationFindUniqueArgs } from "./ComponentActivationFindUniqueArgs";
 import { DeleteComponentActivationArgs } from "./DeleteComponentActivationArgs";
 import { ComponentActivationService } from "../componentActivation.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => ComponentActivation)
 export class ComponentActivationResolverBase {
-  constructor(protected readonly service: ComponentActivationService) {}
+  constructor(
+    protected readonly service: ComponentActivationService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "read",
+    possession: "any",
+  })
   async _componentActivationsMeta(
     @graphql.Args() args: ComponentActivationCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class ComponentActivationResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [ComponentActivation])
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "read",
+    possession: "any",
+  })
   async componentActivations(
     @graphql.Args() args: ComponentActivationFindManyArgs
   ): Promise<ComponentActivation[]> {
     return this.service.componentActivations(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => ComponentActivation, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "read",
+    possession: "own",
+  })
   async componentActivation(
     @graphql.Args() args: ComponentActivationFindUniqueArgs
   ): Promise<ComponentActivation | null> {
@@ -51,6 +78,11 @@ export class ComponentActivationResolverBase {
   }
 
   @graphql.Mutation(() => ComponentActivation)
+  @nestAccessControl.UseRoles({
+    resource: "ComponentActivation",
+    action: "delete",
+    possession: "any",
+  })
   async deleteComponentActivation(
     @graphql.Args() args: DeleteComponentActivationArgs
   ): Promise<ComponentActivation | null> {

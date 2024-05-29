@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { InverterService } from "../inverter.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { InverterCreateInput } from "./InverterCreateInput";
 import { Inverter } from "./Inverter";
 import { InverterFindManyArgs } from "./InverterFindManyArgs";
 import { InverterWhereUniqueInput } from "./InverterWhereUniqueInput";
 import { InverterUpdateInput } from "./InverterUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class InverterControllerBase {
-  constructor(protected readonly service: InverterService) {}
+  constructor(
+    protected readonly service: InverterService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Inverter })
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createInverter(
     @common.Body() data: InverterCreateInput
   ): Promise<Inverter> {
@@ -40,9 +58,18 @@ export class InverterControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Inverter] })
   @ApiNestedQuery(InverterFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async inverters(@common.Req() request: Request): Promise<Inverter[]> {
     const args = plainToClass(InverterFindManyArgs, request.query);
     return this.service.inverters({
@@ -55,9 +82,18 @@ export class InverterControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Inverter })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async inverter(
     @common.Param() params: InverterWhereUniqueInput
   ): Promise<Inverter | null> {
@@ -77,9 +113,18 @@ export class InverterControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Inverter })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateInverter(
     @common.Param() params: InverterWhereUniqueInput,
     @common.Body() data: InverterUpdateInput
@@ -107,6 +152,14 @@ export class InverterControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Inverter })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Inverter",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteInverter(
     @common.Param() params: InverterWhereUniqueInput
   ): Promise<Inverter | null> {

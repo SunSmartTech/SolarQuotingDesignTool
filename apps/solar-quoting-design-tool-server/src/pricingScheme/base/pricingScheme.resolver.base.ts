@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { PricingScheme } from "./PricingScheme";
 import { PricingSchemeCountArgs } from "./PricingSchemeCountArgs";
 import { PricingSchemeFindManyArgs } from "./PricingSchemeFindManyArgs";
 import { PricingSchemeFindUniqueArgs } from "./PricingSchemeFindUniqueArgs";
 import { DeletePricingSchemeArgs } from "./DeletePricingSchemeArgs";
 import { PricingSchemeService } from "../pricingScheme.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => PricingScheme)
 export class PricingSchemeResolverBase {
-  constructor(protected readonly service: PricingSchemeService) {}
+  constructor(
+    protected readonly service: PricingSchemeService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "read",
+    possession: "any",
+  })
   async _pricingSchemesMeta(
     @graphql.Args() args: PricingSchemeCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class PricingSchemeResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [PricingScheme])
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "read",
+    possession: "any",
+  })
   async pricingSchemes(
     @graphql.Args() args: PricingSchemeFindManyArgs
   ): Promise<PricingScheme[]> {
     return this.service.pricingSchemes(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => PricingScheme, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "read",
+    possession: "own",
+  })
   async pricingScheme(
     @graphql.Args() args: PricingSchemeFindUniqueArgs
   ): Promise<PricingScheme | null> {
@@ -51,6 +78,11 @@ export class PricingSchemeResolverBase {
   }
 
   @graphql.Mutation(() => PricingScheme)
+  @nestAccessControl.UseRoles({
+    resource: "PricingScheme",
+    action: "delete",
+    possession: "any",
+  })
   async deletePricingScheme(
     @graphql.Args() args: DeletePricingSchemeArgs
   ): Promise<PricingScheme | null> {

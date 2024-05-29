@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AssignedSiteInspectorService } from "../assignedSiteInspector.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AssignedSiteInspectorCreateInput } from "./AssignedSiteInspectorCreateInput";
 import { AssignedSiteInspector } from "./AssignedSiteInspector";
 import { AssignedSiteInspectorFindManyArgs } from "./AssignedSiteInspectorFindManyArgs";
 import { AssignedSiteInspectorWhereUniqueInput } from "./AssignedSiteInspectorWhereUniqueInput";
 import { AssignedSiteInspectorUpdateInput } from "./AssignedSiteInspectorUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AssignedSiteInspectorControllerBase {
-  constructor(protected readonly service: AssignedSiteInspectorService) {}
+  constructor(
+    protected readonly service: AssignedSiteInspectorService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: AssignedSiteInspector })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAssignedSiteInspector(
     @common.Body() data: AssignedSiteInspectorCreateInput
   ): Promise<AssignedSiteInspector> {
@@ -41,9 +59,18 @@ export class AssignedSiteInspectorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [AssignedSiteInspector] })
   @ApiNestedQuery(AssignedSiteInspectorFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedSiteInspectors(
     @common.Req() request: Request
   ): Promise<AssignedSiteInspector[]> {
@@ -59,9 +86,18 @@ export class AssignedSiteInspectorControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: AssignedSiteInspector })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedSiteInspector(
     @common.Param() params: AssignedSiteInspectorWhereUniqueInput
   ): Promise<AssignedSiteInspector | null> {
@@ -82,9 +118,18 @@ export class AssignedSiteInspectorControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: AssignedSiteInspector })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAssignedSiteInspector(
     @common.Param() params: AssignedSiteInspectorWhereUniqueInput,
     @common.Body() data: AssignedSiteInspectorUpdateInput
@@ -113,6 +158,14 @@ export class AssignedSiteInspectorControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: AssignedSiteInspector })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedSiteInspector",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAssignedSiteInspector(
     @common.Param() params: AssignedSiteInspectorWhereUniqueInput
   ): Promise<AssignedSiteInspector | null> {

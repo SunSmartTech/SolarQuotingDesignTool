@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { OrgSettingService } from "../orgSetting.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OrgSettingCreateInput } from "./OrgSettingCreateInput";
 import { OrgSetting } from "./OrgSetting";
 import { OrgSettingFindManyArgs } from "./OrgSettingFindManyArgs";
 import { OrgSettingWhereUniqueInput } from "./OrgSettingWhereUniqueInput";
 import { OrgSettingUpdateInput } from "./OrgSettingUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class OrgSettingControllerBase {
-  constructor(protected readonly service: OrgSettingService) {}
+  constructor(
+    protected readonly service: OrgSettingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: OrgSetting })
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createOrgSetting(
     @common.Body() data: OrgSettingCreateInput
   ): Promise<OrgSetting> {
@@ -40,9 +58,18 @@ export class OrgSettingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [OrgSetting] })
   @ApiNestedQuery(OrgSettingFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async orgSettings(@common.Req() request: Request): Promise<OrgSetting[]> {
     const args = plainToClass(OrgSettingFindManyArgs, request.query);
     return this.service.orgSettings({
@@ -55,9 +82,18 @@ export class OrgSettingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: OrgSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async orgSetting(
     @common.Param() params: OrgSettingWhereUniqueInput
   ): Promise<OrgSetting | null> {
@@ -77,9 +113,18 @@ export class OrgSettingControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: OrgSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateOrgSetting(
     @common.Param() params: OrgSettingWhereUniqueInput,
     @common.Body() data: OrgSettingUpdateInput
@@ -107,6 +152,14 @@ export class OrgSettingControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: OrgSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "OrgSetting",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteOrgSetting(
     @common.Param() params: OrgSettingWhereUniqueInput
   ): Promise<OrgSetting | null> {

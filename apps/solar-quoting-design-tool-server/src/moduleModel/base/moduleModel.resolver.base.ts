@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ModuleModel } from "./ModuleModel";
 import { ModuleModelCountArgs } from "./ModuleModelCountArgs";
 import { ModuleModelFindManyArgs } from "./ModuleModelFindManyArgs";
 import { ModuleModelFindUniqueArgs } from "./ModuleModelFindUniqueArgs";
 import { DeleteModuleModelArgs } from "./DeleteModuleModelArgs";
 import { ModuleModelService } from "../moduleModel.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => ModuleModel)
 export class ModuleModelResolverBase {
-  constructor(protected readonly service: ModuleModelService) {}
+  constructor(
+    protected readonly service: ModuleModelService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "read",
+    possession: "any",
+  })
   async _moduleModelsMeta(
     @graphql.Args() args: ModuleModelCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class ModuleModelResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [ModuleModel])
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "read",
+    possession: "any",
+  })
   async moduleModels(
     @graphql.Args() args: ModuleModelFindManyArgs
   ): Promise<ModuleModel[]> {
     return this.service.moduleModels(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => ModuleModel, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "read",
+    possession: "own",
+  })
   async moduleModel(
     @graphql.Args() args: ModuleModelFindUniqueArgs
   ): Promise<ModuleModel | null> {
@@ -51,6 +78,11 @@ export class ModuleModelResolverBase {
   }
 
   @graphql.Mutation(() => ModuleModel)
+  @nestAccessControl.UseRoles({
+    resource: "ModuleModel",
+    action: "delete",
+    possession: "any",
+  })
   async deleteModuleModel(
     @graphql.Args() args: DeleteModuleModelArgs
   ): Promise<ModuleModel | null> {

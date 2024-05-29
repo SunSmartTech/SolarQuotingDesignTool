@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { DesignSettingService } from "../designSetting.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { DesignSettingCreateInput } from "./DesignSettingCreateInput";
 import { DesignSetting } from "./DesignSetting";
 import { DesignSettingFindManyArgs } from "./DesignSettingFindManyArgs";
 import { DesignSettingWhereUniqueInput } from "./DesignSettingWhereUniqueInput";
 import { DesignSettingUpdateInput } from "./DesignSettingUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class DesignSettingControllerBase {
-  constructor(protected readonly service: DesignSettingService) {}
+  constructor(
+    protected readonly service: DesignSettingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: DesignSetting })
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createDesignSetting(
     @common.Body() data: DesignSettingCreateInput
   ): Promise<DesignSetting> {
@@ -40,9 +58,18 @@ export class DesignSettingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [DesignSetting] })
   @ApiNestedQuery(DesignSettingFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async designSettings(
     @common.Req() request: Request
   ): Promise<DesignSetting[]> {
@@ -57,9 +84,18 @@ export class DesignSettingControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: DesignSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async designSetting(
     @common.Param() params: DesignSettingWhereUniqueInput
   ): Promise<DesignSetting | null> {
@@ -79,9 +115,18 @@ export class DesignSettingControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: DesignSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateDesignSetting(
     @common.Param() params: DesignSettingWhereUniqueInput,
     @common.Body() data: DesignSettingUpdateInput
@@ -109,6 +154,14 @@ export class DesignSettingControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: DesignSetting })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "DesignSetting",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteDesignSetting(
     @common.Param() params: DesignSettingWhereUniqueInput
   ): Promise<DesignSetting | null> {

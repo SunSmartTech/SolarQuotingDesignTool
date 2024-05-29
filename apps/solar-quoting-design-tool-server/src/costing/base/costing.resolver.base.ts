@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Costing } from "./Costing";
 import { CostingCountArgs } from "./CostingCountArgs";
 import { CostingFindManyArgs } from "./CostingFindManyArgs";
 import { CostingFindUniqueArgs } from "./CostingFindUniqueArgs";
 import { DeleteCostingArgs } from "./DeleteCostingArgs";
 import { CostingService } from "../costing.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Costing)
 export class CostingResolverBase {
-  constructor(protected readonly service: CostingService) {}
+  constructor(
+    protected readonly service: CostingService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "read",
+    possession: "any",
+  })
   async _costingsMeta(
     @graphql.Args() args: CostingCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,14 +47,26 @@ export class CostingResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Costing])
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "read",
+    possession: "any",
+  })
   async costings(
     @graphql.Args() args: CostingFindManyArgs
   ): Promise<Costing[]> {
     return this.service.costings(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Costing, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "read",
+    possession: "own",
+  })
   async costing(
     @graphql.Args() args: CostingFindUniqueArgs
   ): Promise<Costing | null> {
@@ -51,6 +78,11 @@ export class CostingResolverBase {
   }
 
   @graphql.Mutation(() => Costing)
+  @nestAccessControl.UseRoles({
+    resource: "Costing",
+    action: "delete",
+    possession: "any",
+  })
   async deleteCosting(
     @graphql.Args() args: DeleteCostingArgs
   ): Promise<Costing | null> {

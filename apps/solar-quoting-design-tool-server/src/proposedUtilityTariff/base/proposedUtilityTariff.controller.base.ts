@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ProposedUtilityTariffService } from "../proposedUtilityTariff.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ProposedUtilityTariffCreateInput } from "./ProposedUtilityTariffCreateInput";
 import { ProposedUtilityTariff } from "./ProposedUtilityTariff";
 import { ProposedUtilityTariffFindManyArgs } from "./ProposedUtilityTariffFindManyArgs";
 import { ProposedUtilityTariffWhereUniqueInput } from "./ProposedUtilityTariffWhereUniqueInput";
 import { ProposedUtilityTariffUpdateInput } from "./ProposedUtilityTariffUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ProposedUtilityTariffControllerBase {
-  constructor(protected readonly service: ProposedUtilityTariffService) {}
+  constructor(
+    protected readonly service: ProposedUtilityTariffService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: ProposedUtilityTariff })
+  @nestAccessControl.UseRoles({
+    resource: "ProposedUtilityTariff",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createProposedUtilityTariff(
     @common.Body() data: ProposedUtilityTariffCreateInput
   ): Promise<ProposedUtilityTariff> {
@@ -40,9 +58,18 @@ export class ProposedUtilityTariffControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [ProposedUtilityTariff] })
   @ApiNestedQuery(ProposedUtilityTariffFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "ProposedUtilityTariff",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async proposedUtilityTariffs(
     @common.Req() request: Request
   ): Promise<ProposedUtilityTariff[]> {
@@ -57,9 +84,18 @@ export class ProposedUtilityTariffControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: ProposedUtilityTariff })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ProposedUtilityTariff",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async proposedUtilityTariff(
     @common.Param() params: ProposedUtilityTariffWhereUniqueInput
   ): Promise<ProposedUtilityTariff | null> {
@@ -79,9 +115,18 @@ export class ProposedUtilityTariffControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: ProposedUtilityTariff })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ProposedUtilityTariff",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateProposedUtilityTariff(
     @common.Param() params: ProposedUtilityTariffWhereUniqueInput,
     @common.Body() data: ProposedUtilityTariffUpdateInput
@@ -109,6 +154,14 @@ export class ProposedUtilityTariffControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: ProposedUtilityTariff })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "ProposedUtilityTariff",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteProposedUtilityTariff(
     @common.Param() params: ProposedUtilityTariffWhereUniqueInput
   ): Promise<ProposedUtilityTariff | null> {

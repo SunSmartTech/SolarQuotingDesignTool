@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { AssignedTeamMemberService } from "../assignedTeamMember.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AssignedTeamMemberCreateInput } from "./AssignedTeamMemberCreateInput";
 import { AssignedTeamMember } from "./AssignedTeamMember";
 import { AssignedTeamMemberFindManyArgs } from "./AssignedTeamMemberFindManyArgs";
 import { AssignedTeamMemberWhereUniqueInput } from "./AssignedTeamMemberWhereUniqueInput";
 import { AssignedTeamMemberUpdateInput } from "./AssignedTeamMemberUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class AssignedTeamMemberControllerBase {
-  constructor(protected readonly service: AssignedTeamMemberService) {}
+  constructor(
+    protected readonly service: AssignedTeamMemberService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: AssignedTeamMember })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createAssignedTeamMember(
     @common.Body() data: AssignedTeamMemberCreateInput
   ): Promise<AssignedTeamMember> {
@@ -41,9 +59,18 @@ export class AssignedTeamMemberControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [AssignedTeamMember] })
   @ApiNestedQuery(AssignedTeamMemberFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedTeamMembers(
     @common.Req() request: Request
   ): Promise<AssignedTeamMember[]> {
@@ -59,9 +86,18 @@ export class AssignedTeamMemberControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: AssignedTeamMember })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async assignedTeamMember(
     @common.Param() params: AssignedTeamMemberWhereUniqueInput
   ): Promise<AssignedTeamMember | null> {
@@ -82,9 +118,18 @@ export class AssignedTeamMemberControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: AssignedTeamMember })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateAssignedTeamMember(
     @common.Param() params: AssignedTeamMemberWhereUniqueInput,
     @common.Body() data: AssignedTeamMemberUpdateInput
@@ -113,6 +158,14 @@ export class AssignedTeamMemberControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: AssignedTeamMember })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "AssignedTeamMember",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteAssignedTeamMember(
     @common.Param() params: AssignedTeamMemberWhereUniqueInput
   ): Promise<AssignedTeamMember | null> {

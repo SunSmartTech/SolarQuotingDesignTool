@@ -1,0 +1,214 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AssignedContact {
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  contactId String?
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Org {
+  createdAt    DateTime  @default(now())
+  customerData String?
+  id           String    @id @default(cuid())
+  projects     Project[]
+  updatedAt    DateTime  @updatedAt
+}
+
+model AssignedSiteInspector {
+  createdAt     DateTime @default(now())
+  id            String   @id @default(cuid())
+  siteInspector String?
+  updatedAt     DateTime @updatedAt
+}
+
+model Project {
+  createdAt   DateTime @default(now())
+  description String?
+  id          String   @id @default(cuid())
+  org         Org?     @relation(fields: [orgId], references: [id])
+  orgId       String?
+  projectName String?
+  updatedAt   DateTime @updatedAt
+}
+
+model System {
+  createdAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  systemSize Float?
+  systemType String?
+  updatedAt  DateTime @updatedAt
+}
+
+model AssignedTeamMember {
+  createdAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  teamMember String?
+  updatedAt  DateTime @updatedAt
+}
+
+model AssignedInstaller {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  installer String?
+  updatedAt DateTime @updatedAt
+}
+
+model ProposedUtilityTariff {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model PrivateFile {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model CurrentUtilityTariff {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model ModuleModel {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Battery {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model UtilityTariff {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Inverter {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model LeadCaptureForm {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model OtherComponent {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model DocumentTemplate {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentOption {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model PublicFile {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model RoofType {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Incentive {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model PricingScheme {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Costing {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  assignedContacts AssignedContact[]
+  createdAt        DateTime          @default(now())
+  id               String            @id @default(cuid())
+  updatedAt        DateTime          @updatedAt
+}
+
+model OrgSetting {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model EventType {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model Setback {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model DesignSetting {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
+
+model ComponentActivation {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}

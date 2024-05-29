@@ -32,6 +32,7 @@ import { SetbackModule } from "./setback/setback.module";
 import { DesignSettingModule } from "./designSetting/designSetting.module";
 import { ComponentActivationModule } from "./componentActivation/componentActivation.module";
 import { UserModule } from "./user/user.module";
+import { EnvironmentVariablesModule } from "./EnvironmentVariables/environmentvariables.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SecretsManagerModule } from "./providers/secrets/secretsManager.module";
@@ -77,6 +78,7 @@ import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
     DesignSettingModule,
     ComponentActivationModule,
     UserModule,
+    EnvironmentVariablesModule,
     HealthModule,
     PrismaModule,
     SecretsManagerModule,

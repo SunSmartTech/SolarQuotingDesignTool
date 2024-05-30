@@ -1,0 +1,22 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AssignedInstaller {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  installer String?
+  updatedAt DateTime @updatedAt
+}
+
+model AssignedSiteInspector {
+  createdAt     DateTime @default(now())
+  id            String   @id @default(cuid())
+  siteInspector String?
+  updatedAt     DateTime @updatedAt
+}

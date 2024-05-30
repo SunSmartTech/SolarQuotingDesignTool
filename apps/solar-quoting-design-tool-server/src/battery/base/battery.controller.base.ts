@@ -45,6 +45,9 @@ export class BatteryControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: BatteryCreateInput,
+  })
   async createBattery(
     @common.Body() data: BatteryCreateInput
   ): Promise<Battery> {
@@ -124,6 +127,9 @@ export class BatteryControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: BatteryUpdateInput,
   })
   async updateBattery(
     @common.Param() params: BatteryWhereUniqueInput,

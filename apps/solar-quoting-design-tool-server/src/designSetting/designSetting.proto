@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package designSetting;
+service DesignSettingService {
+ rpc createDesignSetting (DesignSettingCreateInput) returns (DesignSetting) {}
+rpc designSettings (findManyParams) returns (stream DesignSetting) {}
+rpc designSetting (DesignSettingWhereUniqueInput) returns (DesignSetting) {}
+rpc updateDesignSetting (DesignSettingUpdateInput) returns (DesignSetting) {}
+rpc deleteDesignSetting (DesignSettingWhereUniqueInput) returns (DesignSetting) {} 
+ }
+message DesignSettingCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DesignSetting {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DesignSettingWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DesignSettingUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

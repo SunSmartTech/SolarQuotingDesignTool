@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package event;
+service EventService {
+ rpc createEvent (EventCreateInput) returns (Event) {}
+rpc events (findManyParams) returns (stream Event) {}
+rpc event (EventWhereUniqueInput) returns (Event) {}
+rpc updateEvent (EventUpdateInput) returns (Event) {}
+rpc deleteEvent (EventWhereUniqueInput) returns (Event) {} 
+ }
+message EventCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Event {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message EventWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message EventUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

@@ -9,5 +9,25 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres:/var/lib/postgresql/data
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - ${JAEGER_AGENT_PORT}:${JAEGER_AGENT_PORT}
+      - 14268:14268
+      - 14250:4317
+  opentelemetry:
+    image: otel/opentelemetry-collector:latest
+    ports:
+      - ${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}
+      - ${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}
+      - 1888:1888
+      - 13133:13133
+      - 55670:55679
+    volumes:
+      - ./otel-config.yml:/etc/otel-config.yml
+    command:
+      - --config=/etc/otel-config.yml
+    depends_on:
+      - jaeger
 volumes:
   postgres: ~

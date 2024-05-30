@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package costing;
+service CostingService {
+ rpc createCosting (CostingCreateInput) returns (Costing) {}
+rpc costings (findManyParams) returns (stream Costing) {}
+rpc costing (CostingWhereUniqueInput) returns (Costing) {}
+rpc updateCosting (CostingUpdateInput) returns (Costing) {}
+rpc deleteCosting (CostingWhereUniqueInput) returns (Costing) {} 
+ }
+message CostingCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Costing {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message CostingWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message CostingUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

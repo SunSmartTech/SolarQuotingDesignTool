@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+                 package system;
+service SystemService {
+ rpc createSystem (SystemCreateInput) returns (System) {}
+rpc systems (findManyParams) returns (stream System) {}
+rpc system (SystemWhereUniqueInput) returns (System) {}
+rpc updateSystem (SystemUpdateInput) returns (System) {}
+rpc deleteSystem (SystemWhereUniqueInput) returns (System) {} 
+ }
+message SystemCreateInput {
+string createdAt = 1;
+string id = 2;
+int32 systemSize = 3;
+string systemType = 4;
+string updatedAt = 5;
+};
+message System {
+string createdAt = 1;
+string id = 2;
+int32 systemSize = 3;
+string systemType = 4;
+string updatedAt = 5;
+};
+message SystemWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+int32 systemSize = 3;
+string systemType = 4;
+string updatedAt = 5;
+};
+message SystemUpdateInput {
+string createdAt = 1;
+string id = 2;
+int32 systemSize = 3;
+string systemType = 4;
+string updatedAt = 5;
+};
+message findManyParams {
+
+};

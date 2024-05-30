@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+                 package assignedInstaller;
+service AssignedInstallerService {
+ rpc createAssignedInstaller (AssignedInstallerCreateInput) returns (AssignedInstaller) {}
+rpc assignedInstallers (findManyParams) returns (stream AssignedInstaller) {}
+rpc assignedInstaller (AssignedInstallerWhereUniqueInput) returns (AssignedInstaller) {}
+rpc updateAssignedInstaller (AssignedInstallerUpdateInput) returns (AssignedInstaller) {}
+rpc deleteAssignedInstaller (AssignedInstallerWhereUniqueInput) returns (AssignedInstaller) {} 
+ }
+message AssignedInstallerCreateInput {
+string createdAt = 1;
+string id = 2;
+string installer = 3;
+string updatedAt = 4;
+};
+message AssignedInstaller {
+string createdAt = 1;
+string id = 2;
+string installer = 3;
+string updatedAt = 4;
+};
+message AssignedInstallerWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string installer = 3;
+string updatedAt = 4;
+};
+message AssignedInstallerUpdateInput {
+string createdAt = 1;
+string id = 2;
+string installer = 3;
+string updatedAt = 4;
+};
+message findManyParams {
+
+};

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package roofType;
+service RoofTypeService {
+ rpc createRoofType (RoofTypeCreateInput) returns (RoofType) {}
+rpc roofTypes (findManyParams) returns (stream RoofType) {}
+rpc roofType (RoofTypeWhereUniqueInput) returns (RoofType) {}
+rpc updateRoofType (RoofTypeUpdateInput) returns (RoofType) {}
+rpc deleteRoofType (RoofTypeWhereUniqueInput) returns (RoofType) {} 
+ }
+message RoofTypeCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message RoofType {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message RoofTypeWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message RoofTypeUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

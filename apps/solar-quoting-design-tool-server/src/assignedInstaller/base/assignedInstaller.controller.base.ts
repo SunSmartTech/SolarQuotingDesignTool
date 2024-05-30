@@ -45,6 +45,9 @@ export class AssignedInstallerControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: AssignedInstallerCreateInput,
+  })
   async createAssignedInstaller(
     @common.Body() data: AssignedInstallerCreateInput
   ): Promise<AssignedInstaller> {
@@ -129,6 +132,9 @@ export class AssignedInstallerControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: AssignedInstallerUpdateInput,
   })
   async updateAssignedInstaller(
     @common.Param() params: AssignedInstallerWhereUniqueInput,

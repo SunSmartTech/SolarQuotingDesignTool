@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package paymentOption;
+service PaymentOptionService {
+ rpc createPaymentOption (PaymentOptionCreateInput) returns (PaymentOption) {}
+rpc paymentOptions (findManyParams) returns (stream PaymentOption) {}
+rpc paymentOption (PaymentOptionWhereUniqueInput) returns (PaymentOption) {}
+rpc updatePaymentOption (PaymentOptionUpdateInput) returns (PaymentOption) {}
+rpc deletePaymentOption (PaymentOptionWhereUniqueInput) returns (PaymentOption) {} 
+ }
+message PaymentOptionCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PaymentOption {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PaymentOptionWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PaymentOptionUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

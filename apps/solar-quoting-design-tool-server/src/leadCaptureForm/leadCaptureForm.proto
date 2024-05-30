@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package leadCaptureForm;
+service LeadCaptureFormService {
+ rpc createLeadCaptureForm (LeadCaptureFormCreateInput) returns (LeadCaptureForm) {}
+rpc leadCaptureForms (findManyParams) returns (stream LeadCaptureForm) {}
+rpc leadCaptureForm (LeadCaptureFormWhereUniqueInput) returns (LeadCaptureForm) {}
+rpc updateLeadCaptureForm (LeadCaptureFormUpdateInput) returns (LeadCaptureForm) {}
+rpc deleteLeadCaptureForm (LeadCaptureFormWhereUniqueInput) returns (LeadCaptureForm) {} 
+ }
+message LeadCaptureFormCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message LeadCaptureForm {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message LeadCaptureFormWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message LeadCaptureFormUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

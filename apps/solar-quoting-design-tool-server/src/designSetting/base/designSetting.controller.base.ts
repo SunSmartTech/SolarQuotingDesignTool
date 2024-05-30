@@ -45,6 +45,9 @@ export class DesignSettingControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: DesignSettingCreateInput,
+  })
   async createDesignSetting(
     @common.Body() data: DesignSettingCreateInput
   ): Promise<DesignSetting> {
@@ -126,6 +129,9 @@ export class DesignSettingControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: DesignSettingUpdateInput,
   })
   async updateDesignSetting(
     @common.Param() params: DesignSettingWhereUniqueInput,

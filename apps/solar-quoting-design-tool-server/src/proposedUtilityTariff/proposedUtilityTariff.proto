@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package proposedUtilityTariff;
+service ProposedUtilityTariffService {
+ rpc createProposedUtilityTariff (ProposedUtilityTariffCreateInput) returns (ProposedUtilityTariff) {}
+rpc proposedUtilityTariffs (findManyParams) returns (stream ProposedUtilityTariff) {}
+rpc proposedUtilityTariff (ProposedUtilityTariffWhereUniqueInput) returns (ProposedUtilityTariff) {}
+rpc updateProposedUtilityTariff (ProposedUtilityTariffUpdateInput) returns (ProposedUtilityTariff) {}
+rpc deleteProposedUtilityTariff (ProposedUtilityTariffWhereUniqueInput) returns (ProposedUtilityTariff) {} 
+ }
+message ProposedUtilityTariffCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ProposedUtilityTariff {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ProposedUtilityTariffWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ProposedUtilityTariffUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

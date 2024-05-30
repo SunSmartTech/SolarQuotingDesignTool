@@ -45,6 +45,9 @@ export class InverterControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: InverterCreateInput,
+  })
   async createInverter(
     @common.Body() data: InverterCreateInput
   ): Promise<Inverter> {
@@ -124,6 +127,9 @@ export class InverterControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: InverterUpdateInput,
   })
   async updateInverter(
     @common.Param() params: InverterWhereUniqueInput,

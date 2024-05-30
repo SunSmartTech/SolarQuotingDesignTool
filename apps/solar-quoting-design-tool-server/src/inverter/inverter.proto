@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package inverter;
+service InverterService {
+ rpc createInverter (InverterCreateInput) returns (Inverter) {}
+rpc inverters (findManyParams) returns (stream Inverter) {}
+rpc inverter (InverterWhereUniqueInput) returns (Inverter) {}
+rpc updateInverter (InverterUpdateInput) returns (Inverter) {}
+rpc deleteInverter (InverterWhereUniqueInput) returns (Inverter) {} 
+ }
+message InverterCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Inverter {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message InverterWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message InverterUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

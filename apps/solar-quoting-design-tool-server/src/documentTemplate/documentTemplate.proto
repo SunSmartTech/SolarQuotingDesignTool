@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package documentTemplate;
+service DocumentTemplateService {
+ rpc createDocumentTemplate (DocumentTemplateCreateInput) returns (DocumentTemplate) {}
+rpc documentTemplates (findManyParams) returns (stream DocumentTemplate) {}
+rpc documentTemplate (DocumentTemplateWhereUniqueInput) returns (DocumentTemplate) {}
+rpc updateDocumentTemplate (DocumentTemplateUpdateInput) returns (DocumentTemplate) {}
+rpc deleteDocumentTemplate (DocumentTemplateWhereUniqueInput) returns (DocumentTemplate) {} 
+ }
+message DocumentTemplateCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DocumentTemplate {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DocumentTemplateWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message DocumentTemplateUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

@@ -45,6 +45,9 @@ export class SetbackControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: SetbackCreateInput,
+  })
   async createSetback(
     @common.Body() data: SetbackCreateInput
   ): Promise<Setback> {
@@ -124,6 +127,9 @@ export class SetbackControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: SetbackUpdateInput,
   })
   async updateSetback(
     @common.Param() params: SetbackWhereUniqueInput,

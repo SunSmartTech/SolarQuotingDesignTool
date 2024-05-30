@@ -45,6 +45,9 @@ export class OrgSettingControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: OrgSettingCreateInput,
+  })
   async createOrgSetting(
     @common.Body() data: OrgSettingCreateInput
   ): Promise<OrgSetting> {
@@ -124,6 +127,9 @@ export class OrgSettingControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: OrgSettingUpdateInput,
   })
   async updateOrgSetting(
     @common.Param() params: OrgSettingWhereUniqueInput,

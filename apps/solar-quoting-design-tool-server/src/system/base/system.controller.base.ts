@@ -45,6 +45,9 @@ export class SystemControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: SystemCreateInput,
+  })
   async createSystem(@common.Body() data: SystemCreateInput): Promise<System> {
     return await this.service.createSystem({
       data: data,
@@ -128,6 +131,9 @@ export class SystemControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: SystemUpdateInput,
   })
   async updateSystem(
     @common.Param() params: SystemWhereUniqueInput,

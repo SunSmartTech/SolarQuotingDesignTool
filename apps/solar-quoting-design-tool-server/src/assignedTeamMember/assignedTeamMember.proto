@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+                 package assignedTeamMember;
+service AssignedTeamMemberService {
+ rpc createAssignedTeamMember (AssignedTeamMemberCreateInput) returns (AssignedTeamMember) {}
+rpc assignedTeamMembers (findManyParams) returns (stream AssignedTeamMember) {}
+rpc assignedTeamMember (AssignedTeamMemberWhereUniqueInput) returns (AssignedTeamMember) {}
+rpc updateAssignedTeamMember (AssignedTeamMemberUpdateInput) returns (AssignedTeamMember) {}
+rpc deleteAssignedTeamMember (AssignedTeamMemberWhereUniqueInput) returns (AssignedTeamMember) {} 
+ }
+message AssignedTeamMemberCreateInput {
+string createdAt = 1;
+string id = 2;
+string teamMember = 3;
+string updatedAt = 4;
+};
+message AssignedTeamMember {
+string createdAt = 1;
+string id = 2;
+string teamMember = 3;
+string updatedAt = 4;
+};
+message AssignedTeamMemberWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string teamMember = 3;
+string updatedAt = 4;
+};
+message AssignedTeamMemberUpdateInput {
+string createdAt = 1;
+string id = 2;
+string teamMember = 3;
+string updatedAt = 4;
+};
+message findManyParams {
+
+};

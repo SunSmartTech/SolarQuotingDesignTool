@@ -45,6 +45,9 @@ export class TeamControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: TeamCreateInput,
+  })
   async createTeam(@common.Body() data: TeamCreateInput): Promise<Team> {
     return await this.service.createTeam({
       data: data,
@@ -122,6 +125,9 @@ export class TeamControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: TeamUpdateInput,
   })
   async updateTeam(
     @common.Param() params: TeamWhereUniqueInput,

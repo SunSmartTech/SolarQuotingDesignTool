@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package publicFile;
+service PublicFileService {
+ rpc createPublicFile (PublicFileCreateInput) returns (PublicFile) {}
+rpc publicFiles (findManyParams) returns (stream PublicFile) {}
+rpc publicFile (PublicFileWhereUniqueInput) returns (PublicFile) {}
+rpc updatePublicFile (PublicFileUpdateInput) returns (PublicFile) {}
+rpc deletePublicFile (PublicFileWhereUniqueInput) returns (PublicFile) {} 
+ }
+message PublicFileCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PublicFile {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PublicFileWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PublicFileUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

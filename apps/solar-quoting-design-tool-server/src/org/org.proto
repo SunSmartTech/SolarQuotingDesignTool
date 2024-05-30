@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+                 package org;
+service OrgService {
+ rpc createOrg (OrgCreateInput) returns (Org) {}
+rpc orgs (findManyParams) returns (stream Org) {}
+rpc org (OrgWhereUniqueInput) returns (Org) {}
+rpc updateOrg (OrgUpdateInput) returns (Org) {}
+rpc deleteOrg (OrgWhereUniqueInput) returns (Org) {}
+rpc findManyOrg (OrgWhereUniqueInput) returns (stream Project) {}
+rpc updateOrg (ProjectParams) returns (stream Project) {}
+rpc connectOrg (ProjectParams) returns (Project) {}
+rpc disconnectOrg (ProjectParams) returns (Project) {} 
+ }
+message OrgCreateInput {
+string createdAt = 1;
+string customerData = 2;
+string id = 3;
+repeated Project projects = 4;
+string updatedAt = 5;
+};
+message Org {
+string createdAt = 1;
+string customerData = 2;
+string id = 3;
+repeated Project projects = 4;
+string updatedAt = 5;
+};
+message OrgWhereUniqueInput {
+string createdAt = 1;
+string customerData = 2;
+string id = 3;
+repeated Project projects = 4;
+string updatedAt = 5;
+};
+message OrgUpdateInput {
+string createdAt = 1;
+string customerData = 2;
+string id = 3;
+repeated Project projects = 4;
+string updatedAt = 5;
+};
+message findManyParams {
+
+};
+message Project {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message ProjectWhereUniqueInput {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message ProjectParams {
+OrgWhereUniqueInput orgWhereUniqueInput = 1;
+ProjectWhereUniqueInput projectWhereUniqueInput = 2;
+};

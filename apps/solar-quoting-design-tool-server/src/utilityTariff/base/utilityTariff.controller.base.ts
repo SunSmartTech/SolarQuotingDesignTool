@@ -45,6 +45,9 @@ export class UtilityTariffControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: UtilityTariffCreateInput,
+  })
   async createUtilityTariff(
     @common.Body() data: UtilityTariffCreateInput
   ): Promise<UtilityTariff> {
@@ -126,6 +129,9 @@ export class UtilityTariffControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: UtilityTariffUpdateInput,
   })
   async updateUtilityTariff(
     @common.Param() params: UtilityTariffWhereUniqueInput,

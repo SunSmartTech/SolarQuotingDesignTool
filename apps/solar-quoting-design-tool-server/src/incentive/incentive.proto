@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package incentive;
+service IncentiveService {
+ rpc createIncentive (IncentiveCreateInput) returns (Incentive) {}
+rpc incentives (findManyParams) returns (stream Incentive) {}
+rpc incentive (IncentiveWhereUniqueInput) returns (Incentive) {}
+rpc updateIncentive (IncentiveUpdateInput) returns (Incentive) {}
+rpc deleteIncentive (IncentiveWhereUniqueInput) returns (Incentive) {} 
+ }
+message IncentiveCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Incentive {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message IncentiveWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message IncentiveUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

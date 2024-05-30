@@ -45,6 +45,9 @@ export class PrivateFileControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: PrivateFileCreateInput,
+  })
   async createPrivateFile(
     @common.Body() data: PrivateFileCreateInput
   ): Promise<PrivateFile> {
@@ -124,6 +127,9 @@ export class PrivateFileControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: PrivateFileUpdateInput,
   })
   async updatePrivateFile(
     @common.Param() params: PrivateFileWhereUniqueInput,

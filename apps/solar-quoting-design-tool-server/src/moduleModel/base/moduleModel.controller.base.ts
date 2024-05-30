@@ -45,6 +45,9 @@ export class ModuleModelControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: ModuleModelCreateInput,
+  })
   async createModuleModel(
     @common.Body() data: ModuleModelCreateInput
   ): Promise<ModuleModel> {
@@ -124,6 +127,9 @@ export class ModuleModelControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: ModuleModelUpdateInput,
   })
   async updateModuleModel(
     @common.Param() params: ModuleModelWhereUniqueInput,

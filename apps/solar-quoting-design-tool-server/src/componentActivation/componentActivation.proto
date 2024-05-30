@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package componentActivation;
+service ComponentActivationService {
+ rpc createComponentActivation (ComponentActivationCreateInput) returns (ComponentActivation) {}
+rpc componentActivations (findManyParams) returns (stream ComponentActivation) {}
+rpc componentActivation (ComponentActivationWhereUniqueInput) returns (ComponentActivation) {}
+rpc updateComponentActivation (ComponentActivationUpdateInput) returns (ComponentActivation) {}
+rpc deleteComponentActivation (ComponentActivationWhereUniqueInput) returns (ComponentActivation) {} 
+ }
+message ComponentActivationCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ComponentActivation {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ComponentActivationWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ComponentActivationUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

@@ -45,6 +45,9 @@ export class ProjectControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: ProjectCreateInput,
+  })
   async createProject(
     @common.Body() data: ProjectCreateInput
   ): Promise<Project> {
@@ -159,6 +162,9 @@ export class ProjectControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: ProjectUpdateInput,
   })
   async updateProject(
     @common.Param() params: ProjectWhereUniqueInput,

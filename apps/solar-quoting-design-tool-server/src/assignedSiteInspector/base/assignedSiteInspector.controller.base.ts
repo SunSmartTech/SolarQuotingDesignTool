@@ -45,6 +45,9 @@ export class AssignedSiteInspectorControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: AssignedSiteInspectorCreateInput,
+  })
   async createAssignedSiteInspector(
     @common.Body() data: AssignedSiteInspectorCreateInput
   ): Promise<AssignedSiteInspector> {
@@ -129,6 +132,9 @@ export class AssignedSiteInspectorControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: AssignedSiteInspectorUpdateInput,
   })
   async updateAssignedSiteInspector(
     @common.Param() params: AssignedSiteInspectorWhereUniqueInput,

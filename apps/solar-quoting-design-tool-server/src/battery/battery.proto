@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package battery;
+service BatteryService {
+ rpc createBattery (BatteryCreateInput) returns (Battery) {}
+rpc batteries (findManyParams) returns (stream Battery) {}
+rpc battery (BatteryWhereUniqueInput) returns (Battery) {}
+rpc updateBattery (BatteryUpdateInput) returns (Battery) {}
+rpc deleteBattery (BatteryWhereUniqueInput) returns (Battery) {} 
+ }
+message BatteryCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Battery {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message BatteryWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message BatteryUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

@@ -45,6 +45,9 @@ export class ComponentActivationControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: ComponentActivationCreateInput,
+  })
   async createComponentActivation(
     @common.Body() data: ComponentActivationCreateInput
   ): Promise<ComponentActivation> {
@@ -126,6 +129,9 @@ export class ComponentActivationControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: ComponentActivationUpdateInput,
   })
   async updateComponentActivation(
     @common.Param() params: ComponentActivationWhereUniqueInput,

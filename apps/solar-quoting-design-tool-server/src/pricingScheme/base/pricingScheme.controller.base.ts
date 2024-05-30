@@ -45,6 +45,9 @@ export class PricingSchemeControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: PricingSchemeCreateInput,
+  })
   async createPricingScheme(
     @common.Body() data: PricingSchemeCreateInput
   ): Promise<PricingScheme> {
@@ -126,6 +129,9 @@ export class PricingSchemeControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: PricingSchemeUpdateInput,
   })
   async updatePricingScheme(
     @common.Param() params: PricingSchemeWhereUniqueInput,

@@ -45,6 +45,9 @@ export class OtherComponentControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: OtherComponentCreateInput,
+  })
   async createOtherComponent(
     @common.Body() data: OtherComponentCreateInput
   ): Promise<OtherComponent> {
@@ -126,6 +129,9 @@ export class OtherComponentControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: OtherComponentUpdateInput,
   })
   async updateOtherComponent(
     @common.Param() params: OtherComponentWhereUniqueInput,

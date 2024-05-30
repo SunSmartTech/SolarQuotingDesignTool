@@ -45,6 +45,9 @@ export class IncentiveControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: IncentiveCreateInput,
+  })
   async createIncentive(
     @common.Body() data: IncentiveCreateInput
   ): Promise<Incentive> {
@@ -124,6 +127,9 @@ export class IncentiveControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: IncentiveUpdateInput,
   })
   async updateIncentive(
     @common.Param() params: IncentiveWhereUniqueInput,

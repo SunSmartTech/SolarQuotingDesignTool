@@ -45,6 +45,9 @@ export class AssignedContactControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: AssignedContactCreateInput,
+  })
   async createAssignedContact(
     @common.Body() data: AssignedContactCreateInput
   ): Promise<AssignedContact> {
@@ -152,6 +155,9 @@ export class AssignedContactControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: AssignedContactUpdateInput,
   })
   async updateAssignedContact(
     @common.Param() params: AssignedContactWhereUniqueInput,

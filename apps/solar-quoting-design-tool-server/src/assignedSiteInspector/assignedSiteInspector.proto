@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+                 package assignedSiteInspector;
+service AssignedSiteInspectorService {
+ rpc createAssignedSiteInspector (AssignedSiteInspectorCreateInput) returns (AssignedSiteInspector) {}
+rpc assignedSiteInspectors (findManyParams) returns (stream AssignedSiteInspector) {}
+rpc assignedSiteInspector (AssignedSiteInspectorWhereUniqueInput) returns (AssignedSiteInspector) {}
+rpc updateAssignedSiteInspector (AssignedSiteInspectorUpdateInput) returns (AssignedSiteInspector) {}
+rpc deleteAssignedSiteInspector (AssignedSiteInspectorWhereUniqueInput) returns (AssignedSiteInspector) {} 
+ }
+message AssignedSiteInspectorCreateInput {
+string createdAt = 1;
+string id = 2;
+string siteInspector = 3;
+string updatedAt = 4;
+};
+message AssignedSiteInspector {
+string createdAt = 1;
+string id = 2;
+string siteInspector = 3;
+string updatedAt = 4;
+};
+message AssignedSiteInspectorWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string siteInspector = 3;
+string updatedAt = 4;
+};
+message AssignedSiteInspectorUpdateInput {
+string createdAt = 1;
+string id = 2;
+string siteInspector = 3;
+string updatedAt = 4;
+};
+message findManyParams {
+
+};

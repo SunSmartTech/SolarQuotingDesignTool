@@ -45,6 +45,9 @@ export class DocumentTemplateControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: DocumentTemplateCreateInput,
+  })
   async createDocumentTemplate(
     @common.Body() data: DocumentTemplateCreateInput
   ): Promise<DocumentTemplate> {
@@ -126,6 +129,9 @@ export class DocumentTemplateControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: DocumentTemplateUpdateInput,
   })
   async updateDocumentTemplate(
     @common.Param() params: DocumentTemplateWhereUniqueInput,

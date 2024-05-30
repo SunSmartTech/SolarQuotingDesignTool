@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package otherComponent;
+service OtherComponentService {
+ rpc createOtherComponent (OtherComponentCreateInput) returns (OtherComponent) {}
+rpc otherComponents (findManyParams) returns (stream OtherComponent) {}
+rpc otherComponent (OtherComponentWhereUniqueInput) returns (OtherComponent) {}
+rpc updateOtherComponent (OtherComponentUpdateInput) returns (OtherComponent) {}
+rpc deleteOtherComponent (OtherComponentWhereUniqueInput) returns (OtherComponent) {} 
+ }
+message OtherComponentCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OtherComponent {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OtherComponentWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OtherComponentUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

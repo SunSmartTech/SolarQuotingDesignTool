@@ -48,6 +48,9 @@ export class OrgControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: OrgCreateInput,
+  })
   async createOrg(@common.Body() data: OrgCreateInput): Promise<Org> {
     return await this.service.createOrg({
       data: data,
@@ -126,6 +129,9 @@ export class OrgControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: OrgUpdateInput,
   })
   async updateOrg(
     @common.Param() params: OrgWhereUniqueInput,

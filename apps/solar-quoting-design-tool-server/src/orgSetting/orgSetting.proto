@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package orgSetting;
+service OrgSettingService {
+ rpc createOrgSetting (OrgSettingCreateInput) returns (OrgSetting) {}
+rpc orgSettings (findManyParams) returns (stream OrgSetting) {}
+rpc orgSetting (OrgSettingWhereUniqueInput) returns (OrgSetting) {}
+rpc updateOrgSetting (OrgSettingUpdateInput) returns (OrgSetting) {}
+rpc deleteOrgSetting (OrgSettingWhereUniqueInput) returns (OrgSetting) {} 
+ }
+message OrgSettingCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OrgSetting {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OrgSettingWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message OrgSettingUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

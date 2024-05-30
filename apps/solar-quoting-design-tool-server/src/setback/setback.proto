@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package setback;
+service SetbackService {
+ rpc createSetback (SetbackCreateInput) returns (Setback) {}
+rpc setbacks (findManyParams) returns (stream Setback) {}
+rpc setback (SetbackWhereUniqueInput) returns (Setback) {}
+rpc updateSetback (SetbackUpdateInput) returns (Setback) {}
+rpc deleteSetback (SetbackWhereUniqueInput) returns (Setback) {} 
+ }
+message SetbackCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Setback {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message SetbackWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message SetbackUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

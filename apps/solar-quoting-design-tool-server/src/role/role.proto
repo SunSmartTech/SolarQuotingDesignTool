@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package role;
+service RoleService {
+ rpc createRole (RoleCreateInput) returns (Role) {}
+rpc roles (findManyParams) returns (stream Role) {}
+rpc role (RoleWhereUniqueInput) returns (Role) {}
+rpc updateRole (RoleUpdateInput) returns (Role) {}
+rpc deleteRole (RoleWhereUniqueInput) returns (Role) {} 
+ }
+message RoleCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Role {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message RoleWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message RoleUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

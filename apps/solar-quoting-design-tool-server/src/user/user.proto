@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+                 package user;
+service UserService {
+ rpc createUser (UserCreateInput) returns (User) {}
+rpc users (findManyParams) returns (stream User) {}
+rpc user (UserWhereUniqueInput) returns (User) {}
+rpc updateUser (UserUpdateInput) returns (User) {}
+rpc deleteUser (UserWhereUniqueInput) returns (User) {} 
+ }
+message UserCreateInput {
+string createdAt = 1;
+string email = 2;
+string firstName = 3;
+string id = 4;
+string lastName = 5;
+string password = 6;
+repeated string roles = 7;
+string updatedAt = 8;
+string username = 9;
+};
+message User {
+string createdAt = 1;
+string email = 2;
+string firstName = 3;
+string id = 4;
+string lastName = 5;
+string password = 6;
+repeated string roles = 7;
+string updatedAt = 8;
+string username = 9;
+};
+message UserWhereUniqueInput {
+string createdAt = 1;
+string email = 2;
+string firstName = 3;
+string id = 4;
+string lastName = 5;
+string password = 6;
+repeated string roles = 7;
+string updatedAt = 8;
+string username = 9;
+};
+message UserUpdateInput {
+string createdAt = 1;
+string email = 2;
+string firstName = 3;
+string id = 4;
+string lastName = 5;
+string password = 6;
+repeated string roles = 7;
+string updatedAt = 8;
+string username = 9;
+};
+message findManyParams {
+
+};

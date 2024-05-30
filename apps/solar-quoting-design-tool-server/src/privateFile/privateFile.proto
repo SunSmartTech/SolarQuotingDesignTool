@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package privateFile;
+service PrivateFileService {
+ rpc createPrivateFile (PrivateFileCreateInput) returns (PrivateFile) {}
+rpc privateFiles (findManyParams) returns (stream PrivateFile) {}
+rpc privateFile (PrivateFileWhereUniqueInput) returns (PrivateFile) {}
+rpc updatePrivateFile (PrivateFileUpdateInput) returns (PrivateFile) {}
+rpc deletePrivateFile (PrivateFileWhereUniqueInput) returns (PrivateFile) {} 
+ }
+message PrivateFileCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PrivateFile {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PrivateFileWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PrivateFileUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

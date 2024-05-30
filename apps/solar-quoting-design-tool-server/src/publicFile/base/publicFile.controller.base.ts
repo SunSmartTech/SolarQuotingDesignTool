@@ -45,6 +45,9 @@ export class PublicFileControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: PublicFileCreateInput,
+  })
   async createPublicFile(
     @common.Body() data: PublicFileCreateInput
   ): Promise<PublicFile> {
@@ -124,6 +127,9 @@ export class PublicFileControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: PublicFileUpdateInput,
   })
   async updatePublicFile(
     @common.Param() params: PublicFileWhereUniqueInput,

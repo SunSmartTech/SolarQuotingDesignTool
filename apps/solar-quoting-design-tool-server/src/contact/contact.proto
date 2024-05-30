@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+                 package contact;
+service ContactService {
+ rpc createContact (ContactCreateInput) returns (Contact) {}
+rpc contacts (findManyParams) returns (stream Contact) {}
+rpc contact (ContactWhereUniqueInput) returns (Contact) {}
+rpc updateContact (ContactUpdateInput) returns (Contact) {}
+rpc deleteContact (ContactWhereUniqueInput) returns (Contact) {}
+rpc findManyContact (ContactWhereUniqueInput) returns (stream AssignedContact) {}
+rpc updateContact (AssignedContactParams) returns (stream AssignedContact) {}
+rpc connectContact (AssignedContactParams) returns (AssignedContact) {}
+rpc disconnectContact (AssignedContactParams) returns (AssignedContact) {} 
+ }
+message ContactCreateInput {
+repeated AssignedContact assignedContacts = 1;
+string createdAt = 2;
+string id = 3;
+string updatedAt = 4;
+};
+message Contact {
+repeated AssignedContact assignedContacts = 1;
+string createdAt = 2;
+string id = 3;
+string updatedAt = 4;
+};
+message ContactWhereUniqueInput {
+repeated AssignedContact assignedContacts = 1;
+string createdAt = 2;
+string id = 3;
+string updatedAt = 4;
+};
+message ContactUpdateInput {
+repeated AssignedContact assignedContacts = 1;
+string createdAt = 2;
+string id = 3;
+string updatedAt = 4;
+};
+message findManyParams {
+
+};
+message AssignedContact {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message AssignedContactWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message AssignedContactParams {
+ContactWhereUniqueInput contactWhereUniqueInput = 1;
+AssignedContactWhereUniqueInput assignedcontactWhereUniqueInput = 2;
+};

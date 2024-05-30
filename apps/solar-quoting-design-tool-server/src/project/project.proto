@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+                 package project;
+service ProjectService {
+ rpc createProject (ProjectCreateInput) returns (Project) {}
+rpc projects (findManyParams) returns (stream Project) {}
+rpc project (ProjectWhereUniqueInput) returns (Project) {}
+rpc updateProject (ProjectUpdateInput) returns (Project) {}
+rpc deleteProject (ProjectWhereUniqueInput) returns (Project) {} 
+ }
+message ProjectCreateInput {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message Project {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message ProjectWhereUniqueInput {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message ProjectUpdateInput {
+string createdAt = 1;
+string description = 2;
+string id = 3;
+string projectName = 4;
+string updatedAt = 5;
+};
+message findManyParams {
+
+};

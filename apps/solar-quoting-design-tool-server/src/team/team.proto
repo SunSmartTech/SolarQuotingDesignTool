@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package team;
+service TeamService {
+ rpc createTeam (TeamCreateInput) returns (Team) {}
+rpc teams (findManyParams) returns (stream Team) {}
+rpc team (TeamWhereUniqueInput) returns (Team) {}
+rpc updateTeam (TeamUpdateInput) returns (Team) {}
+rpc deleteTeam (TeamWhereUniqueInput) returns (Team) {} 
+ }
+message TeamCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message Team {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message TeamWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message TeamUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

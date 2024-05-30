@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package moduleModel;
+service ModuleModelService {
+ rpc createModuleModel (ModuleModelCreateInput) returns (ModuleModel) {}
+rpc moduleModels (findManyParams) returns (stream ModuleModel) {}
+rpc moduleModel (ModuleModelWhereUniqueInput) returns (ModuleModel) {}
+rpc updateModuleModel (ModuleModelUpdateInput) returns (ModuleModel) {}
+rpc deleteModuleModel (ModuleModelWhereUniqueInput) returns (ModuleModel) {} 
+ }
+message ModuleModelCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ModuleModel {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ModuleModelWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message ModuleModelUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

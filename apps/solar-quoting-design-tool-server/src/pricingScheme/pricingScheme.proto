@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package pricingScheme;
+service PricingSchemeService {
+ rpc createPricingScheme (PricingSchemeCreateInput) returns (PricingScheme) {}
+rpc pricingSchemes (findManyParams) returns (stream PricingScheme) {}
+rpc pricingScheme (PricingSchemeWhereUniqueInput) returns (PricingScheme) {}
+rpc updatePricingScheme (PricingSchemeUpdateInput) returns (PricingScheme) {}
+rpc deletePricingScheme (PricingSchemeWhereUniqueInput) returns (PricingScheme) {} 
+ }
+message PricingSchemeCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PricingScheme {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PricingSchemeWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message PricingSchemeUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

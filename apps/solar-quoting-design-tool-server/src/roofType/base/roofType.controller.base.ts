@@ -45,6 +45,9 @@ export class RoofTypeControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: RoofTypeCreateInput,
+  })
   async createRoofType(
     @common.Body() data: RoofTypeCreateInput
   ): Promise<RoofType> {
@@ -124,6 +127,9 @@ export class RoofTypeControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: RoofTypeUpdateInput,
   })
   async updateRoofType(
     @common.Param() params: RoofTypeWhereUniqueInput,

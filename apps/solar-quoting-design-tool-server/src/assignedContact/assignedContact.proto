@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+                 package assignedContact;
+service AssignedContactService {
+ rpc createAssignedContact (AssignedContactCreateInput) returns (AssignedContact) {}
+rpc assignedContacts (findManyParams) returns (stream AssignedContact) {}
+rpc assignedContact (AssignedContactWhereUniqueInput) returns (AssignedContact) {}
+rpc updateAssignedContact (AssignedContactUpdateInput) returns (AssignedContact) {}
+rpc deleteAssignedContact (AssignedContactWhereUniqueInput) returns (AssignedContact) {} 
+ }
+message AssignedContactCreateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message AssignedContact {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message AssignedContactWhereUniqueInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message AssignedContactUpdateInput {
+string createdAt = 1;
+string id = 2;
+string updatedAt = 3;
+};
+message findManyParams {
+
+};

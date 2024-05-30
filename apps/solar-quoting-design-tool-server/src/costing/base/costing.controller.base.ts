@@ -45,6 +45,9 @@ export class CostingControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: CostingCreateInput,
+  })
   async createCosting(
     @common.Body() data: CostingCreateInput
   ): Promise<Costing> {
@@ -124,6 +127,9 @@ export class CostingControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: CostingUpdateInput,
   })
   async updateCosting(
     @common.Param() params: CostingWhereUniqueInput,

@@ -45,6 +45,9 @@ export class AssignedTeamMemberControllerBase {
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
+  @swagger.ApiBody({
+    type: AssignedTeamMemberCreateInput,
+  })
   async createAssignedTeamMember(
     @common.Body() data: AssignedTeamMemberCreateInput
   ): Promise<AssignedTeamMember> {
@@ -129,6 +132,9 @@ export class AssignedTeamMemberControllerBase {
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
+  })
+  @swagger.ApiBody({
+    type: AssignedTeamMemberUpdateInput,
   })
   async updateAssignedTeamMember(
     @common.Param() params: AssignedTeamMemberWhereUniqueInput,
